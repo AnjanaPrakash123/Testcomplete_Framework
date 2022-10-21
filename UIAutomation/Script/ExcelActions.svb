@@ -1,0 +1,53 @@
+﻿
+'USEUNIT Project_variables
+'USEUNIT ReportHelper
+'.......................Function to read values from  excel file.......................................
+
+Function ReadExcel(testid,SheetName)
+  Set excelobj=CreateObject("Excel.Application")
+  ExcelFilePath = Project.Path&"Files\VFTest.xlsx"
+  set workbook=excelobj.Workbooks.open( ExcelFilePath)
+  set worksheet=workbook.Sheets(SheetName)
+  rowCount=worksheet.UsedRange.rows.count
+  colCount=worksheet.UsedRange.columns.count
+  For i=2 to rowCount
+     cellValue=worksheet.Cells(i,1)
+     If cellValue =testid Then
+      MsgBox "Found" &" : " &cellValue
+      Exit Function
+     End If
+     
+  Next
+  
+  workbook.save
+  workbook.close
+  excelobj.Quit
+ 
+  
+End Function
+
+'.......................Function to write data to  excel file.......................................
+Function WriteExcel(testid,SheetName)
+  On Error Resume Next
+    Err.Clear
+  Set excelobj=CreateObject("Excel.Application")
+  ExcelFilePath =Project.Path&"Files\VFTest.xlsx"
+  excelobj.Visible = False
+  excelobj.DisplayAlerts = False
+  set workbook=excelobj.Workbooks.open( ExcelFilePath,,False)
+  set worksheet=workbook.Sheets(SheetName)
+
+  
+  worksheet.Cells(9,1).value="eddddddddddddddddddd"
+  workbook.save
+  workbook.close
+  excelobj.Quit
+  If Err.Description<> "" then
+    Log.Error "Write to excel failed"
+       Call FnWriteReportStep("Write to excel :","Failed",Err.Description,"")
+  
+  End If
+  Call FnWriteReportStep(gStepDesc,"PASSED","","")
+ 
+ 
+End Function

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{302E54A8-7D5B-4593-9563-357C2734256B}" version="1400" key="{C6041ECE-C6B4-4F48-AF23-3FC856CB6760}" typeId="{302E54A8-7D5B-4593-9563-357C2734256B}">
+	<config nodeName="ImageSet4" />
+	<testData />
+	<data>
+		<item caption="Voiditem" moniker="{7886FB48-62DF-4E5C-8B8F-3C5346E1479F}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Voiditem.png" initialHash="493AB0ED" selectionLeft="633" selectionTop="245" selectionWidth="60" selectionHeight="55" initialLeft="633" initialTop="245" initialWidth="60" initialHeight="55" pixelTolerance="0" colorTolerance="0" deviceName="" />
+			<image imageFileName="Data\Voiditem_1.png" initialHash="29BA2C8D" selectionLeft="638" selectionTop="248" selectionWidth="55" selectionHeight="52" initialLeft="638" initialTop="248" initialWidth="55" initialHeight="52" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Basketpos" moniker="{BA5FEAE1-A035-4271-8E12-F03E94A2965D}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Basketpos_1.png" initialHash="4E39C9DE" selectionLeft="621" selectionTop="502" selectionWidth="72" selectionHeight="69" initialLeft="621" initialTop="502" initialWidth="72" initialHeight="69" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="OK" moniker="{C3E9C54A-0580-410F-92BE-7725945AAB79}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\OK.png" initialHash="7CBECDAD" selectionLeft="807" selectionTop="529" selectionWidth="76" selectionHeight="40" initialLeft="807" initialTop="529" initialWidth="76" initialHeight="40" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="yesF1" moniker="{B97B3A72-582E-4A15-BDA0-4DAE5A375FE4}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\yesF1.png" initialHash="27A051A2" selectionLeft="721" selectionTop="169" selectionWidth="86" selectionHeight="50" initialLeft="721" initialTop="169" initialWidth="86" initialHeight="50" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Ecard" moniker="{A5806D48-F283-44BE-B1BD-93D622CEADB9}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Ecard.png" initialHash="825BCAE5" selectionLeft="817" selectionTop="193" selectionWidth="116" selectionHeight="47" initialLeft="817" initialTop="193" initialWidth="116" initialHeight="47" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Over" moniker="{B478C059-A68E-46AC-B5D1-65A4A2567ACB}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Over.png" initialHash="00000000" selectionLeft="817" selectionTop="210" selectionWidth="112" selectionHeight="52" initialLeft="817" initialTop="210" initialWidth="112" initialHeight="52" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+	</data>
+</Root>

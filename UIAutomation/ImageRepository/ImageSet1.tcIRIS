@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{302E54A8-7D5B-4593-9563-357C2734256B}" version="1400" key="{62ED8E64-1930-450B-B379-23341D3388DA}" typeId="{302E54A8-7D5B-4593-9563-357C2734256B}">
+	<config nodeName="ImageSet1" />
+	<testData />
+	<data>
+		<item caption="Item1" moniker="{EE1B90F5-A7B4-40EB-8F63-F5AE3E023FEF}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item1.png" initialHash="557E091E" selectionLeft="646" selectionTop="505" selectionWidth="64" selectionHeight="49" initialLeft="646" initialTop="505" initialWidth="64" initialHeight="49" pixelTolerance="0" colorTolerance="0" deviceName="" />
+			<image imageFileName="Data\Item1_2.png" initialHash="0FB06A85" selectionLeft="624" selectionTop="505" selectionWidth="62" selectionHeight="59" initialLeft="624" initialTop="505" initialWidth="62" initialHeight="59" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item2" moniker="{56953CC7-5508-4335-BCD3-B0B34F727CC2}" isComposite="False" simpleMode="True" currentImageIndex="1">
+			<image imageFileName="Data\Item2.png" initialHash="7B8C7B9A" selectionLeft="815" selectionTop="356" selectionWidth="36" selectionHeight="39" initialLeft="815" initialTop="356" initialWidth="36" initialHeight="39" pixelTolerance="0" colorTolerance="0" deviceName="" />
+			<image imageFileName="Data\Item2_1.png" initialHash="1275697C" selectionLeft="815" selectionTop="361" selectionWidth="36" selectionHeight="24" initialLeft="815" initialTop="361" initialWidth="36" initialHeight="24" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item3" moniker="{2B5C8C79-3897-402C-B0E7-0A2BB78BC289}" isComposite="False" simpleMode="True" currentImageIndex="1">
+			<image imageFileName="Data\Item3.png" initialHash="D6FEDB76" selectionLeft="815" selectionTop="354" selectionWidth="41" selectionHeight="39" initialLeft="815" initialTop="354" initialWidth="41" initialHeight="39" pixelTolerance="0" colorTolerance="0" deviceName="" />
+			<image imageFileName="Data\Item3_1.png" initialHash="7825AE12" selectionLeft="795" selectionTop="362" selectionWidth="33" selectionHeight="31" initialLeft="795" initialTop="362" initialWidth="33" initialHeight="31" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item4" moniker="{7F9176EA-6CE8-4299-AC54-140C22CDDD32}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item4.png" initialHash="833192DC" selectionLeft="929" selectionTop="534" selectionWidth="76" selectionHeight="32" initialLeft="929" initialTop="534" initialWidth="76" initialHeight="32" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item5" moniker="{1D368E51-CC2A-4E48-876B-9BC90F748B40}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item5.png" initialHash="D895AB67" selectionLeft="376" selectionTop="127" selectionWidth="609" selectionHeight="322" initialLeft="376" initialTop="127" initialWidth="609" initialHeight="322" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Halfords2" moniker="{8530C694-87CD-44FD-BF84-19CA6F34DF0C}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Halfords2.png" initialHash="F5FD7FD8" selectionLeft="312" selectionTop="271" selectionWidth="95" selectionHeight="24" initialLeft="312" initialTop="271" initialWidth="95" initialHeight="24" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item6" moniker="{C51CDC5D-AB7A-4B93-B628-FE9CB4B76596}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item6.png" initialHash="76025F6B" selectionLeft="312" selectionTop="263" selectionWidth="22" selectionHeight="32" initialLeft="312" initialTop="263" initialWidth="22" initialHeight="32" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item7" moniker="{411D3D8F-48E1-4A49-8C9C-F5A75B26877F}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item7.png" initialHash="C85CC1D1" selectionLeft="1329" selectionTop="400" selectionWidth="34" selectionHeight="22" initialLeft="1329" initialTop="400" initialWidth="34" initialHeight="22" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item8" moniker="{BBCC2A21-9222-4ED5-B1C2-2B8EC31037CD}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item8.png" initialHash="4378ED08" selectionLeft="968" selectionTop="80" selectionWidth="15" selectionHeight="22" initialLeft="968" initialTop="80" initialWidth="15" initialHeight="22" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Item9" moniker="{2F0DDFC7-29F2-4F3A-A6F1-285066F629E7}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Item9.png" initialHash="81FEF4BF" selectionLeft="871" selectionTop="217" selectionWidth="24" selectionHeight="17" initialLeft="871" initialTop="217" initialWidth="24" initialHeight="17" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="OK" moniker="{821781B0-7851-4C9E-98E8-E6AE9CD3EF74}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\OK_1.png" initialHash="00000000" selectionLeft="761" selectionTop="234" selectionWidth="63" selectionHeight="39" initialLeft="761" initialTop="234" initialWidth="63" initialHeight="39" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+	</data>
+</Root>

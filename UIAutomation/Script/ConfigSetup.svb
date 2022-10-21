@@ -1,0 +1,113 @@
+﻿'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT ReportHelper
+'USEUNIT UserActions
+'USEUNIT EnvironmentVariables
+
+
+'*****************************************************************************************************************************
+'Function Name : FnConvertExcelToXML
+'Author : G10X
+'*****************************************************************************************************************************
+Sub FnConvertExcelToXML(sExcelPath,sXmlPath)
+On Error Resume Next
+Err.clear
+ Dim excelFile, excelSheet, rowIndex
+Dim sXMLValue
+  
+  ' Get the sheet of the Excel file
+  Set excelFile = Excel.Open(sExcelPath)
+  Set excelSheet = excelFile.SheetByTitle("Objects")
+
+ sXMLValue="<ObjectRepository>"
+    iTotalRows=excelSheet.RowCount
+    iTotalCols=excelSheet.ColumnCount
+    For rowIndex=2 to iTotalRows
+        sVarName=Trim(excelSheet.Cell(1,rowIndex).Value)
+        sParentObj="<ParentObject>" & Trim(excelSheet.Cell(2,rowIndex).Value)&"</ParentObject>"
+        sChildObj="<ChildObject>" & Trim(excelSheet.Cell(3,rowIndex).Value)&"</ChildObject>"
+        sDepth="<Depth>" & Trim(excelSheet.Cell(4,rowIndex).Value)&"</Depth>"
+        sIndex="<Index>" & Trim(excelSheet.Cell(5,rowIndex).Value)&"</Index>"
+        sXMLValue=sXMLValue & "<"&sVarName&">"&sParentObj&sChildObj&sDepth&sIndex&"</"&sVarName&">"
+    Next
+    excelFile.close
+
+    sXMLValue=sXMLValue&"</ObjectRepository>"
+    sXMLValue=aqConvert.VarToStr(sXMLValue)
+    aqFile.Create(sXmlPath)
+    aqFile.WriteToTextFile sXmlPath , sXMLValue , aqFile.ctUTF8 , True
+If Err.Description<> "" then
+    Log.Message "FnConvertExcelToXML function failed due to error : " & Err.Description
+
+  End If
+End sub
+
+
+'*****************************************************************************************************************************
+'Function Name : FnGetObjPropFromXML
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetObjPropFromXML(byref StepDesc, sXmlFilePath,byref oDictData)
+    On Error Resume Next
+    Err.Clear
+    FnGetObjPropFromXML=False  
+    
+    Set oDictData=CreateObject("Scripting.Dictionary")
+    Project.Variables.gDictionaryObject.RemoveAll
+  
+    Set Doc=Sys.OleObject("Msxml2.DOMDocument.6.0")
+    Doc.async=False
+    Err.Clear
+  
+    Call Doc.Load(sXmlFilePath)
+  
+    Set sNode=Doc.documentElement
+    Set aElements=sNode.childNodes
+     
+    For iLoop = 0 to aElements.length - 1
+        sParentObj=""
+        sChildObj=""
+        sDepth=""
+        sIndex=""
+        Set sTestNode=aElements.item(iLoop)
+        sTestNodeName=sTestNode.NodeName
+        Set sChileNodes=sTestNode.childNodes
+        For jLoop = 0 to sChileNodes.length - 1
+            Set sChildNode=sChileNodes.item(jLoop)
+            sChildNodeName=Trim(Ucase(sChildNode.NodeName))
+            sTestValue=Trim(sChildNode.NodeTypedValue)
+            Select Case (sChildNodeName)
+              Case "PARENTOBJECT"
+                       sParentObj=sTestValue
+              Case "CHILDOBJECT"
+                       sChildObj=sTestValue
+              Case "DEPTH"
+                       If Trim(sChildObj)="" then
+                          sDepth=""
+                       Else
+                          sDepth=sTestValue
+                       End If
+              Case "INDEX"
+                      If Trim(sChildObj)="" or Trim(sDepth)="" then
+                          sIndex=""
+                       Else
+                          sIndex=sTestValue
+                       End If
+              Case else
+                    'Do Nothing
+            End Select
+           Next
+           
+           If oDictData.Exists(trim(Ucase(sTestNodeName))) then
+              oDictData.Remove(trim(Ucase(sTestNodeName)))
+           End if
+           oDictData.Add trim(Ucase(sTestNodeName)),Trim(sParentObj) & "||" & Trim(sChildObj) & "||" & Trim(sDepth) & "||" & Trim(sIndex)
+    Next  
+    If Err.Description<> "" then
+        Log.Message "FnGetObjPropFromXML function failed due to error : " & Err.Description
+        Project.Variables.gTestCaseStatus="FAILED"
+        Exit Function
+    End IF
+    Project.Variables.gDictionaryObject=oDictData
+    FnGetObjPropFromXML=True
+End Function

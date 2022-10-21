@@ -1,0 +1,89 @@
+﻿'============================================================================================
+'
+' Library Name: LibraryFunctions_SQL
+'
+' Aurthor(s): Venu Remadevi
+'
+' Date:   31st December 2022
+'
+' Summary: Library for SQL methods/functions
+'
+'============================================================================================
+'
+' Last Updated by:            Venu R on 31st December 2022
+'
+' Update Reason:             File created
+'
+'============================================================================================
+
+' ==================================================
+'
+' Function Name: FnDB_Establishconnection
+'
+' Author/Date:     Venu R - 31.12.2021
+'
+' Description:        This function establish connection to the order details db
+'
+' Changes:                             N/A
+' ==================================================
+Function FnDB_Establishconnection
+
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objCon.Open "Driver={ODBC Driver 13 for SQL Server};Database=;Server=;Port=1443;Uid=;Pwd=;Session Mode=ANSI;Protocol=TCPIP;Persist Security Info=True"
+
+End Function
+
+' ==================================================
+'
+' Function Name: FnDB_SelectQuery
+'
+' Author/Date:     Venu R - 31.12.2021
+'
+' Description:     This function retrieve Order details based on the query provided
+'
+' Changes:         N/A
+' ==================================================
+Function FnDB_SelectQuery(Querystmt)
+
+  Call FnDB_Establishconnection
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.fields.item(0)
+  If RecordCount > 0 Then 
+    objRecordSet.Close
+    objRecordSet.Open strSQLStatement, objCon 'create recordset
+    vOrderId=Trim(objRecordSet.Fields(0))
+    vItem=Trim(objRecordSet.Fields(1))
+    Set objRecordSet = Nothing
+    objCon.Close
+    Set objCon = Nothing
+    Call FnUpdate_OrderStatus_DB("Locked")
+  Else
+    Set objRecordSet = Nothing
+    objCon.Close
+    Set objCon = Nothing
+  End If       
+
+End Function
+
+' ==================================================
+'
+' Function Name: FnUpdate_OrderStatus_DB
+'
+' Author/Date:     Venu R - 31.12.2021
+'
+' Description:        This function updates the status of order data, whether in use or available for testing in DB
+'
+' Changes:                             N/A
+' ==================================================
+
+Function FnUpdate_OrderStatus_DB(vtempStatus)
+
+  FnUpdate_OrderStatus_DB
+  strSQLStatement = "UPDATE [Order_Details] SET Status ='"&vtempStatus&"' WHERE EmailID Like ('"&vEmailId&"');"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+End Function

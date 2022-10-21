@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<folder name="CoreFiles">
+			<folder name="WMS">
+				<child name="WMS_UserActions" key="{AF9065FE-E0AC-4210-8E0C-B9EBC0461FA6}" path="..\..\..\..\MWFiles\VF\FrameworkDoc\Halfords-Backend-Automation-main\UIAutomation\Script\WMS_UserActions.svb" />
+			</folder>
+			<folder name="SAP">
+				<child name="SAP_UserActions" key="{7B07F5B3-477D-45AB-BEF4-1B7D4014D066}" path="SAP_UserActions.svb" />
+			</folder>
+			<folder name="iServe">
+				<child name="iServe_UserActions" key="{B3774977-DDCE-4A4D-994A-B32D5A098AD7}" path="iServe_UserActions.svb" />
+			</folder>
+			<folder name="Metapack">
+				<child name="Metapack_UserActions" key="{699FAF3E-347D-413A-A4BF-0C2FEB191AF0}" path="Metapack_UserActions.svb" />
+			</folder>
+			<child name="UserActions" key="{05808A66-6E81-40C0-ACB0-425C6498C30B}" path="UserActions.svb" />
+			<child name="ObjectHelper" key="{D7B41C79-A4DC-4511-B710-AC959E56798A}" path="ObjectHelper.svb" />
+			<child name="CommonHelper" key="{139826D3-863A-4B0C-866C-FE9D7919FC94}" path="CommonHelper.svb" />
+			<child name="ReportHelper" key="{5607029E-B873-442E-9A69-CF72E8295B55}" path="ReportHelper.svb" />
+			<child name="ConvertObjectRepository" key="{757D24EE-3C3E-4709-BFA9-2BCAE538E5F5}" path="ConvertObjectRepository.svb" />
+			<child name="Variables" key="{B5DD070A-19D9-43FF-A3CB-4979648C8392}" path="Variables.svb" />
+		</folder>
+		<folder name="StepDefinition">
+			<child name="Unit2" key="{E714A857-B6CA-47CD-835D-31621B06BF18}" path="Unit2.svb" />
+			<child name="Return_Definition" key="{02E86AA2-C42C-4975-8C50-E216B8080FCA}" path="Return_Definition.svb" />
+			<child name="Sample_rc" key="{6B618D09-DD96-4E42-9810-8B410CAAF9BB}" path="Sample_rc.svb" />
+			<child name="BasketStepDefinition" key="{F4D91E06-372C-47FB-BF45-3AA2776ACB76}" path="BasketStepDefinition.svb" />
+		</folder>
+		<folder name="Setup">
+			<child name="ConfigSetup" key="{4C49A39E-E43B-4223-8CB7-3EABF037BAE1}" path="ConfigSetup.svb" />
+			<child name="BDDHooks" key="{FB35ABC0-0B53-4C63-BF74-4B002AE87BE9}" path="BDDHooks.svb" />
+			<child name="GeneralEvents" key="{BA471397-BD42-46FE-A99F-2C0AE06599D4}" path="GeneralEvents.svb" />
+			<child name="EnvironmentVariables" key="{DEE137B7-2917-43DE-8B45-D470967858CB}" path="EnvironmentVariables.svb" />
+		</folder>
+		<folder name="GenericFunctions">
+			<child name="WaitProperty" key="{9E75B865-BDAE-47A4-918A-669DCF1C6F82}" path="WaitProperty.svb" />
+			<child name="Validation" key="{560F2DF8-24D1-4D8D-BB16-6A470B291922}" path="Validation.svb" />
+			<child name="TouchActions" key="{6C14D6E5-E5F3-4D01-B986-288CAB3673BF}" path="TouchActions.svb" />
+			<child name="XML_Actions" key="{5A7C4510-E895-417D-859A-D22B6AD7DF06}" path="XML_Actions.svb" />
+			<child name="test" key="{305A971F-0ED5-4C0D-AD4E-1765C746688D}" path="test.svb" />
+			<child name="PythonIntegration" key="{853136EE-BA22-40A0-AE77-CD05B4383A05}" path="PythonIntegration.svb" />
+			<child name="ExcelActions" key="{B3601100-DD02-4B6B-A6FB-EF3DF33827FD}" path="ExcelActions.svb" />
+			<child name="Project_variables" key="{B056D264-FB9D-4D29-952A-91CF7F32ED67}" path="Project_variables.svb" />
+			<child name="Database_Actions" key="{0A7F66C7-0DD2-49F1-A867-E6A380B526FA}" path="Database_Actions.svb" />
+		</folder>
+		<child name="LibraryFunctions_SQL" key="{827DE1C7-F001-49E8-901C-1FA25A69C95B}" path="LibraryFunctions_SQL.svb" />
+		<child name="POS_ST_LM_070" key="{7E168F0A-E45B-44AF-B579-281770EAAE42}" path="POS_ST_LM_070.svb" />
+	</children>
+</Root>

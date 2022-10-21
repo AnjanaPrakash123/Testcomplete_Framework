@@ -1,0 +1,975 @@
+﻿'''''''All SAP related user actions are listed here in this script''''''''''
+'USEUNIT CommonHelper
+'USEUNIT UserActions
+'USEUNIT Variables
+
+''''Function name: FnSAP_Login''''
+''''Description: User function for login''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_Login(username,password)
+  Call fnKillProcess("Kill any open instances of application","saplogon.exe")
+  Call FnInvokeTestedApp("Invoke Application", "saplogon")
+  aqUtils.Delay(5000)
+  Call FnTestObjWait("Wait for the environmrnt list", "SapList",5)
+  Call Aliases.saplogon.SAP_Logon_750.AfxOleControl120.AfxMDIFrame120.AfxFrameOrView120.UIAObject("myContainer").Window("SysListView32", "", 1).ClickItem("ECC6 QA", 0)
+  Call FnPerformAction("click on Logon", "Logon","","Click")
+   Indicator.Hide
+  Call ExplicitDelay(2000)
+  Call Aliases.saplogon.SAP_Logon_750.Minimize
+  Call FnPerformAction("Enter User Name", "Username","","Click")
+  Call FnPerformAction("Enter User Name", "Username",sap_username,"SETTEXT")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Enter Password", "Password","","Click")
+  Call FnPerformAction("Enter Password", "Password",sap_password,"KEYS")
+  Call FnPerformAction("Select the green tick", "TickButton","","Click")
+  Call ExplicitDelay(2000)
+End Function
+
+''''Function name: FnSAP_Transaction''''
+''''Description: User function allows user to navigate to different SAP screen using tcode''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Transaction(tcode)
+  Call FnPerformAction("Enter tCode", "TCode","","Click")
+  Call FnPerformAction("Enter tCode", "TCode",tcode,"KEYS")
+  Call FnSndKeys("{ENTER}",1) 
+  Call ExplicitDelay(2000)
+End Function
+
+''''Function name: FnSAP_iDOC_Checks''''
+''''Description: User function for checking iDOC availability''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_iDOC_Checks(orderNum,idoctype)
+  Call FnSAP_Transaction(tcode_iDocSearch)
+  dtmY=Cstr(Date()-2)
+  dtmYesterday_temp=Split(dtmY,"/")
+  dtmYesterday=dtmYesterday_temp(1)&"."&dtmYesterday_temp(0)&"."&dtmYesterday_temp(2)
+  Call FnPerformAction("Enter Date", "CreatedOn","","Click")
+  Call FnSndKeys("{DEL}",5)
+  Call FnSndKeys("{BACKSPACE}",5)
+  Call FnPerformAction("Enter Date", "CreatedOn",dtmYesterday,"KEYS")
+  Call FnSndKeys("{PGDN}",1) 
+  Call FnPerformAction("Enter Order number", "SearchValue","","Click")
+  Call FnPerformAction("Enter Order number", "SearchValue",orderNum,"KEYS")
+  Call FnPerformAction("Execute button", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Yes button", "YesBtn","","Click")
+  aqUtils.Delay(5000)
+  Call FnTestObjWait("iDoc number label", "iDocNumLbl","90")
+  aqUtils.Delay(2000)
+  Call FnSAP_CheckIdoc(idoctype)
+   aqUtils.Delay(2000) 
+End Function
+''''Function name: FnSAP_ValidateIdoc''''
+''''Description: User function for checking individual iDOC in detail''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_ValidateIdoc(ordernum,idoctype,status,flag)
+  Call FnSAP_Transaction(tcode_iDocSearch)
+  dtmY=Cstr(Date()-2)
+  dtmYesterday_temp=Split(dtmY,"/")
+  dtmYesterday=dtmYesterday_temp(1)&"."&dtmYesterday_temp(0)&"."&dtmYesterday_temp(2)
+  Call FnPerformAction("Enter Date", "CreatedOn","","Click")
+  Call FnSndKeys("{DEL}",5)
+  Call FnSndKeys("{BACKSPACE}",5)
+  Call FnPerformAction("Enter Date", "CreatedOn",dtmYesterday,"KEYS")
+  
+  Select Case Trim(Ucase(idoctype))
+        Case "Z_ECOMTRACK"                    
+            Call FnSAP_VerifyiDoc_Z_ECOMTRACK(ordernum,status)
+        Case "WPUBON"    
+            Call FnSAP_VerifyiDoc_WPUBON(ordernum,flag)
+        Case "Z_CARNOT"    
+            Call FnSAP_VerifyiDoc_Z_CARNOT(ordernum)    
+        Case Else
+          Log.Warning("FnPerformAction invalid case value :" +idoctype)
+          Exit Function
+  End Select  
+
+End Function
+Function FnSAP_VerifyiDoc_Z_CARNOT(onum)
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldLogicalMessage.SetText "Z_CARNOT"
+  Call FnSndKeys("{PGDN}",1) 
+  Call FnPerformAction("Enter Order number", "SearchValue","","Click")
+  Call FnPerformAction("Enter Order number", "SearchValue",onum,"KEYS")
+  Call FnPerformAction("Execute button", "Execute","","Click")
+  Call FnTestObjWait("iDoc number label", "iDocNumLbl","90")
+  Call FnSAP_CheckIdoc("Z_CARNOT")
+End Function
+''''Function name: FnSAP_VerifyiDoc_WPUBON''''
+''''Description: User function for checking WPUBON iDOC in detail''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_VerifyiDoc_WPUBON(onum,f)
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldLogicalMessage.SetText "WPUBON"
+  Call FnSndKeys("{PGDN}",1) 
+  Call FnPerformAction("Enter Order number", "SearchValue","","Click")
+  Call FnPerformAction("Enter Order number", "SearchValue",onum,"KEYS")
+  Call FnPerformAction("Execute button", "Execute","","Click")
+  Call FnTestObjWait("iDoc number label", "iDocNumLbl","90")
+  Call FnSAP_CheckIdoc("WPUBON")
+  Aliases.saplogon.mainwindowSap.userareaUsr.label4.Click
+  If f="ZS37" Then
+    Aliases.saplogon.mainwindowSap.userareaUsr.label000002.Click
+    Call FnSAP_checkMessage("ZS37")
+  End If  
+End Function
+''''Function name: FnSAP_VerifyiDoc_Z_ECOMTRACK''''
+''''Description: User function for checking Z_ECOMTRACK iDOC in detail''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_VerifyiDoc_Z_ECOMTRACK(onum,s)
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldCurrentStatus.SetText s
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldLogicalMessage.SetText "Z_ECOMTRACK"
+  Call FnSndKeys("{PGDN}",1) 
+  Call FnPerformAction("Enter Order number", "SearchValue","","Click")
+  Call FnPerformAction("Enter Order number", "SearchValue",onum,"KEYS")
+  Call FnPerformAction("Execute button", "Execute","","Click")
+  Call FnTestObjWait("iDoc number label", "iDocNumLbl","90")
+  Call FnSAP_CheckIdoc("Z_ECOMTRACK")
+  Aliases.saplogon.mainwindowSap.userareaUsr.label4.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.label000001.Click
+  If s="53" Then
+    Call FnSAP_checkMessage("ItemLineRequiresRefund")  
+      
+      If InStr(PaymentType,"GC") > 0 Then
+        Call FnSAP_checkMessage("GIFTCARD")
+      ElseIf InStr(PaymentType,"Paypal") > 0 Then
+        Call FnSAP_checkMessage("PAYPAL")
+      ElseIf InStr(PaymentType,"Creditcard") > 0 Then
+        Call FnSAP_checkMessage("VISA")       
+      End If
+  End If
+  If s="03" Then
+    Call FnSAP_checkMessage(order_num_temp) 
+  End If
+End Function
+''''Function name: FnSAP_checkMessage''''
+''''Description: User function for checking whether a text is available in the displayed screen''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_checkMessage(msg)
+  Msgflag=0
+   alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap).FullText  '.userareaUsr
+   If InStr(alltext,msg) > 0 Then
+      Log.Checkpoint(msg&" found")
+   Else
+      Call FnSndKeys("{PGDN}",1)
+      alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap).FullText
+      If InStr(alltext,msg) > 0 Then
+        Log.Checkpoint(msg&" found")
+      Else
+        Log.Error(msg&" not found")  
+      End If
+   End If 
+End Function
+Function FnSAP_checkMessage_flag(msg)
+  
+   alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap).FullText  '.userareaUsr
+   If InStr(alltext,msg) > 0 Then
+      Log.Checkpoint(msg&" found")
+      Msgflag=1
+   Else
+      Call FnSndKeys("{PGDN}",1)
+      alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap).FullText
+      If InStr(alltext,msg) > 0 Then
+        Log.Checkpoint(msg&" found")
+        Msgflag=1 
+      Else
+        Msgflag=0
+      End If
+   End If 
+End Function
+''''Function name: FnSAP_checkMessage''''
+''''Description: User function for checking whether a text is available in the displayed screen''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FnSAP_checkMessage_notPresent(msg)
+ 
+   alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr).FullText
+   If InStr(alltext,msg) > 0 Then
+      Log.Error(msg&" found")
+   Else
+      Log.Checkpoint(msg&" not found")  
+   End If 
+End Function
+''''Function name: FnSAP_CheckIdoc''''
+''''Description: User function for checking Idoc name''''
+''''Last updated on: 08/04//2022- Venukrishnan VR''''
+Function FnSAP_CheckIdoc(idoctype)
+   alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr).FullText'CheckText("*"&idoctype&"*")
+   If InStr(alltext,idoctype) > 0 Then
+      Log.Checkpoint(idoctype&" found")
+   Else
+      Call FnSndKeys("{PGDN}",1)
+      alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr).FullText
+      If InStr(alltext,idoctype) > 0 Then
+        Log.Checkpoint(idoctype&" found")
+      Else
+        Log.Error(idoctype&" not found")  
+      End If
+   End If 
+End Function
+
+
+''''Function name: FnSAP_Order_Checks''''
+''''Description: User function for checking order details''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Order_Checks_HWD(orderNum)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order",orderNum,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Itemoverview", "Itemoverview","","Click")
+  Call ExplicitDelay(5000) 
+  Call FnVerifyItem(product_id_temp)
+  Call FnVerifyItemCategory(catg_temp)
+  Call FnPerformAction("Ecom order details", "Ecom_Order","","DBLCLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "AdditionalDataA","","CLICK")
+  Call FnPerformAction("Ecom order details", "AdditionalDataB","","CLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "Amount","","CLICK")
+  Call FnVerifyAccountinfo_Price(product_price_temp)  
+  Call FnVerifyAccountinfo_status("2")  
+  Log.Enabled=False 
+  Call FnPerformAction("Ecom order details", "BackBtn","","CLICK") 
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("PO number", "PONum","","CLICK") 
+  Call ExplicitDelay(2000)
+  Log.Enabled=True
+  Call FnPerformAction("Display document flow", "DisplayDocFlow","","CLICK") 
+  Call FnGetdeliveryNum_HWD 
+End Function
+''''Function name: FnSAP_SearchArticle''''
+''''Description: User function for checking order details''''
+''''Last updated on: 02/03//2022- Venukrishnan VR''''
+Public Function FnSAP_SearchArticle(arno)
+  
+  Call FnPerformAction("Enter Order number", "Article_sch","","Click")
+  Call FnPerformAction("Enter tCode", "Article_sch",arno,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  If ImageRepository.ImageSet1.Item6.Exists Then 
+    ImageRepository.ImageSet1.Item6.Click
+  End If
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  
+End Function
+''''Function name: FnSAP_InsertHcode''''
+''''Description: Insert hazard code for an article''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnSAP_InsertHcode(h)
+  val=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.wText
+  Log.Message(val)
+  Call Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.Click
+  Call FnSndKeys("{TAB}",1)
+  Call FnSndKeys(h,1)
+  Call FnSndKeys("{ENTER}",1)
+  Aliases.saplogon.modalwindowInformation.userareaUsr.buttonContinue.Click
+  Aliases.saplogon.modalwindowInformation.userareaUsr.buttonCancel.Click
+  Call FnPerformAction("Click Save button", "SaveBtn","","Click")
+  Aliases.saplogon.modalwindowInformation.toolbarTbar0.buttonBtn0.Click
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_UpdateHcode''''
+''''Description: Update hazard code for an article''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnSAP_UpdateHcode(h)
+  val=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.wText
+  Log.Message(val)
+  Call Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.Click
+  Call FnSndKeys("{TAB}",1)
+  'Call FnSndKeys("^(A)",1)
+  Call FnSndKeys(h,1)
+  Call FnSndKeys("{ENTER}",1)
+  Aliases.saplogon.modalwindowInformation.userareaUsr.buttonContinue.Click
+  Aliases.saplogon.modalwindowInformation.userareaUsr.buttonCancel.Click
+  Call FnPerformAction("Click Save button", "SaveBtn","","Click")
+  Aliases.saplogon.modalwindowInformation.toolbarTbar0.buttonBtn0.Click
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_DeleteHcode''''
+''''Description: Delete hazard code for an article''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnSAP_DeleteHcode
+ Set vscrollbar=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.VerticalScrollbar
+ max=vscrollbar.Maximum
+ min=vscrollbar.Minimum
+ Log.Message(max)
+ Log.Message(min)
+  val=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.wText
+  Log.Message(val)
+  Call Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.tablecontrolSaplzcmMaraExtension.textfieldGZtcClpWaZzhcode.Click
+  Call FnSndKeys("{TAB}",1)
+  'Call FnSndKeys("{DEL}",4)
+  vscrollbar.Position=(max-min)/3
+ Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTabspr1.tabSp05.scrollcontainerTabfra1Saplmgmw20.simplecontainerSub4SaplzcmMaraEx.buttonDelete.Click
+  Aliases.saplogon.modalwindowInformation.toolbarTbar0.buttonBtn0.Click
+  Call FnPerformAction("Click Save button", "SaveBtn","","Click")
+  Aliases.saplogon.modalwindowInformation.toolbarTbar0.buttonBtn0.Click
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_ClickBackBtn''''
+''''Description: Click the back button in SAP GUI''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnSAP_ClickBackBtn
+  Call FnPerformAction("Enter Order number", "BackBtn","","Click")
+  Call ExplicitDelay(5000)
+End Function
+''''Function name: FnSAP_SearchTable''''
+''''Description: Search BDCP2 table''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_SearchTable(code,pcode)
+
+  Call FnPerformAction("Enter table name", "TableName","","Click")
+  Call FnPerformAction("Enter table name", "TableName","BDCP2","KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,4]").Click
+  'Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,4]").SetText "ZCM0157"
+  Call FnSndKeys("{PGDN}",1)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,3]").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,3]").SetText "HAL04225"
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow2.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow2.SetText "000000000000"&pcode
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow3.Click
+  tempdate=Date()
+  dateval=Split(tempdate,"/")
+  If Len(CStr(dateval(0))) =1 Then
+    mon="0"&dateval(0)
+  Else
+    mon=dateval(0)  
+  End If
+  If Len(CStr(dateval(1))) =1 Then
+    d="0"&dateval(1)
+  Else
+    d=dateval(1)  
+  End If
+  tempdate=dateval(2)&mon&d&"*"
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow3.SetText tempdate
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Call FnSndKeys("{PGDN}",6)
+  Call FnSAP_ClickBackBtn
+  Call FnPerformAction("Enter table name", "TableName","","Click")
+  Call FnSndKeys("{BKSP}",6)
+  Call FnSndKeys("{DEL}",5)
+  Call FnPerformAction("Enter table name", "TableName","ZCM0157","KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnSAP_ClickBackBtn
+  Call FnSAP_Transaction(tcode_Gen_Table_Dis)
+  Call ExplicitDelay(2000)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").SetText pcode
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  If Len(code) > 0 Then
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&code&"*")
+  Else  
+    Call FnSAP_checkMessage_notPresent(Hcode)   
+  End if
+  Call FnSAP_ClickBackBtn
+  Call FnSAP_ClickBackBtn
+  
+End Function
+Function FnSAP_SearchProd_ZCM0157(pcode,msg)
+  Call FnSAP_Transaction(tcode_Gen_Table_Dis)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Enter table name", "TableName","ZCM0157","KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").SetText pcode
+  Call FnPerformAction("Enter product code", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Call FnSAP_checkMessage(msg)
+  
+End Function
+''''Function name: FnSAP_SearchTable''''
+''''Description: Search BDCP2 table''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_SearchTableDelete(code)
+
+  Call FnPerformAction("Enter table name", "TableName","","Click")
+  Call FnPerformAction("Enter table name", "TableName","BDCP2","KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,4]").Click
+  'Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,4]").SetText "ZCM0157"
+  Call FnSndKeys("{PGDN}",1)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,3]").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,3]").SetText "HAL04225"
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow2.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.textfieldGsSelfieldsLow2.SetText "000000000000100701"
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Call FnSAP_ClickBackBtn
+  Call FnPerformAction("Enter table name", "TableName","","Click")
+  Call FnSndKeys("{BKSP}",10)
+  Call FnSndKeys("{DEL}",10)
+  Call FnPerformAction("Enter table name", "TableName","ZCM0157","KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnSAP_ClickBackBtn
+  Call FnSAP_Transaction(tcode_Gen_Table_Dis)
+  Call ExplicitDelay(2000)
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSaplse16nselfieldsTc.CTextField("ctxtGS_SELFIELDS-LOW[2,1]").SetText "100701"
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Call FnSAP_checkMessage_notPresent(code)
+  Call FnSAP_ClickBackBtn
+  Call FnSAP_ClickBackBtn 
+End Function
+
+''''Function name: FnSAP_Run_ZCMI1043''''
+''''Description: Function for running ZCMI1043 job''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_Run_ZCMI1043(itmcode,hcode)
+  Call FnSAP_Transaction(tcode_Gen_Table_Dis)
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldProgram.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldProgram.SetText "ZCMI1043"
+  Call FnPerformAction("number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+  Aliases.saplogon.mainwindowSap.userareaUsr.radiobuttonSelectUsingArticleLis.Click
+    Aliases.saplogon.mainwindowSap.userareaUsr.textfieldMessageType.Click
+    Aliases.saplogon.mainwindowSap.userareaUsr.textfieldMessageType.SetText "Z_CLPINFO"
+    Aliases.saplogon.mainwindowSap.userareaUsr.textfieldArticle.Click
+    If Len(itmcode) > 0 Then
+      Aliases.saplogon.mainwindowSap.userareaUsr.textfieldArticle.SetText itmcode
+    Else
+      Aliases.saplogon.mainwindowSap.userareaUsr.textfieldHcode.SetText hcode
+    End If
+    Call FnPerformAction("number", "Execute","","Click")
+    Call FnSAP_ReadIdocNum
+    Log.Message("Idoc num: "&IDoc_num)
+    Aliases.saplogon.modalwindowInformation.toolbarTbar0.buttonBtn0.Click
+End Function
+''''Function name: FnSAP_Validate_ZCLPINFO''''
+''''Description: Function for validating ZCLIPINFO Idoc''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_Validate_ZCLPINFO(prodcode,h,desc,pcode,warning)
+    aqUtils.Delay(5000)
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*Z_CLPINFO*")
+    Log.Enabled=False
+    Aliases.saplogon.mainwindowSap.userareaUsr.label4.Click
+    
+    Aliases.saplogon.mainwindowSap.userareaUsr.label000001.Click
+    Log.Enabled=True
+    If Aliases.saplogon.mainwindowSap.userareaUsr.tablecontrolSapledi5tIntSeg.textfieldMatnr.Exists(1000) Then
+      Call FnSAP_checkMessage(prodcode)
+    End If
+    'Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*000000000000"&prodcode&"*")
+    Call FnSAP_ClickBackBtn
+    Log.Enabled=False
+    Call FnSAP_checkMessage_flag("000003")
+    If Msgflag=1 Then
+      Aliases.saplogon.mainwindowSap.userareaUsr.label000003.Click
+    Else
+      Aliases.saplogon.mainwindowSap.userareaUsr.label000002.Click
+    End If
+    aqUtils.Delay(2000)
+    Log.Enabled=True
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&h&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&desc&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&pcode&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&warning&"*")
+    Log.Enabled=True
+End Function
+
+''''Function name: FnSAP_Validate_ZCLPINFO_Delete''''
+''''Description: Function for validating ZCLIPINFO Ido for delete hcodec''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_Validate_ZCLPINFO_Delete(hcode,prodcode)
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*Z_CLPINFO*")
+    Log.Enabled=False
+    Aliases.saplogon.mainwindowSap.userareaUsr.label4.Click
+    
+    Aliases.saplogon.mainwindowSap.userareaUsr.label000001.Click
+    Log.Enabled=True
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*000000000000"&prodcode&"*")
+    Call FnSAP_ClickBackBtn
+    Log.Enabled=False
+    Aliases.saplogon.mainwindowSap.userareaUsr.label000002.Click
+    Log.Enabled=True
+    Call FnSAP_checkMessage_notPresent(hcode) 
+    If Aliases.saplogon.mainwindowSap.userareaUsr.label000003.Exists Then
+        Aliases.saplogon.mainwindowSap.userareaUsr.label000003.Click
+        Call FnSAP_checkMessage_notPresent(hcode) 
+    End If
+    
+End Function
+''''Function name: FnSAP_ReadIdocNum''''
+''''Description: Function for reading Idoc number''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ReadIdocNum
+  Set alltext=OCR.Recognize((Aliases.saplogon.modalwindowInformation))
+  For k=0 to alltext.BlockCount - 1
+    Log.Message(alltext.Block(k).Text)
+    If InStr(alltext.Block(k).Text,"IDoc successfully created") > 0 Then
+      tempIdoc=Split(alltext.Block(k).Text,"0000000")
+      IDoc_num=tempIdoc(1)
+      Exit For
+     End If
+   Next 
+End Function
+
+Function FnSAP_Validate_ZCLPINFO_hcode(prodcode,h,desc,pcode,warning)
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*Z_CLPINFO*")
+    Log.Enabled=False
+    Aliases.saplogon.mainwindowSap.userareaUsr.label4.Click
+    
+    ImageRepository.ImageSet2.Item2.Click
+    Log.Enabled=True
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*000000000000"&prodcode&"*")
+    Call FnSAP_ClickBackBtn
+    Log.Enabled=False
+   Aliases.saplogon.mainwindowSap.userareaUsr.label000014.Click
+    aqUtils.Delay(2000)
+    Log.Enabled=True
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&h&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&desc&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&pcode&"*")
+    Call OCR.Recognize(Aliases.saplogon.mainwindowSap).CheckText("*"&warning&"*")
+    Log.Enabled=True
+End Function
+''''Function name: FnSAP_SearchIdocwithNum''''
+''''Description: Function for searcing Idoc using number''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_SearchIdocwithNum(prodnum)
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldIdocNumber.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldIdocNumber.SetText IDoc_num
+  If Len(prodnum) > 0 Then
+    Call FnSndKeys("{PGDN}",1) 
+    Call FnPerformAction("Enter Order number", "SearchValue","","Click")
+    Call FnPerformAction("Enter Order number", "SearchValue","167745","KEYS")
+  End If                 
+  Call FnPerformAction("number", "Execute","","Click")
+End Function
+''''Function name: FnSAP_Run_Job''''
+''''Description: Function for running job in sap''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_Run_Job(jobname,user)
+  Call FnPerformAction("Enter Job name", "Programname","","Click")
+  Call FnSndKeys("^(A)",1)
+  Call FnPerformAction("Enter Job name", "Programname",jobname,"KEYS")
+  Call FnPerformAction("Enter User name", "ProgramUser","","Click")
+  Call FnSndKeys("^(A)",1)
+  Call FnPerformAction("Enter User name", "ProgramUser",user,"KEYS")
+  Aliases.saplogon.mainwindowSap.userareaUsr.checkboxSched.Click
+  
+  Call FnPerformAction("number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_SelectUsingArticle''''
+''''Description: Function processing the job using article selection''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_SelectUsingArticle(message,item)
+  Aliases.saplogon.mainwindowSap.userareaUsr.RadioButton("radP_RAD2").Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldMessageType.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldMessageType.SetText "Z_CLPINFO"
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldArticle.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldArticle.SetText item
+  Call FnPerformAction("number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+
+End Function
+
+''''Function name: FnSAP_Order_Checks''''
+''''Description: User function for checking order details''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Order_Checks(orderNum)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order",orderNum,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Itemoverview", "Itemoverview","","Click")
+  Call ExplicitDelay(5000) 
+  Call FnVerifyItem(product_1)
+  Call FnVerifyItemCategory(catg_temp)
+  Call FnPerformAction("Ecom order details", "Ecom_Order","","DBLCLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "AdditionalDataA","","CLICK")
+  Call FnPerformAction("Ecom order details", "AdditionalDataB","","CLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "Amount","","CLICK")
+  Call FnVerifyAccountinfo_Price(order_total)  
+  Call FnVerifyAccountinfo_status(accnt_info_sts)  
+  Log.Enabled=False 
+  Call FnPerformAction("Ecom order details", "BackBtn","","CLICK") 
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("PO number", "PONum","","CLICK") 
+  Call ExplicitDelay(2000)
+  Log.Enabled=True
+  Call FnPerformAction("Display document flow", "DisplayDocFlow","","CLICK") 
+  Call FnGetdeliveryNum_OC 
+  'Call FnGetdeliveryNum_HWD 
+End Function
+''''Function name: FnSAP_Order_Checks_RC''''
+''''Description: Function checking RC order in SAP''''
+''''Last updated on: 16/11/2021- AMMU K''''
+public Function FnSAP_Order_Checks_RC(orderNum)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order",orderNum,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Itemoverview", "Itemoverview","","Click")
+  Call ExplicitDelay(5000) 
+  Call FnVerifyItem(product_id_temp)
+  Call FnVerifyItemCategory(catg_temp)
+  Call FnPerformAction("Ecom order details", "Ecom_Order","","DBLCLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "AdditionalDataA","","CLICK")
+  Call FnPerformAction("Ecom order details", "AdditionalDataB","","CLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "Amount","","CLICK")
+  Call FnVerifyAccountinfo_Price(product_price_temp)  
+  Call FnVerifyAccountinfo_status("2")  
+  Log.Enabled=False 
+  Call FnPerformAction("Ecom order details", "BackBtn","","CLICK") 
+  'Call FnGetdeliveryNum_HWD 
+End Function
+''''Function name: FnSAP_NavigateAccountingInfo''''
+''''Description: Function for navigating to account info of an order''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_NavigateAccountingInfo(orderNum)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order",orderNum,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Display document flow", "DisplayDocFlow","","CLICK")
+  Call OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.splittershellShell.containershellShellcont1.shelltreeShell1).BlockByText("Accounting document").Click
+  Call FnPerformAction("Display document flow", "DisplayDoc","","CLICK")
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_NavigateCreditMemo''''
+''''Description: Function for navigating to account info of an order''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_NavigateCreditMemo(orderNum)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order",orderNum,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Display document flow", "DisplayDocFlow","","CLICK")
+  Call OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.splittershellShell.containershellShellcont1.shelltreeShell1).BlockByText("Credit Memo").Click
+  Call FnPerformAction("Display document flow", "DisplayDoc","","CLICK")
+  Call ExplicitDelay(2000)
+End Function
+''''Function name: FnSAP_SelectAccountingInfo''''
+''''Description: Function for navigating to account info of an order''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_SelectAccountingInfo() 
+  Aliases.saplogon.mainwindowSap.toolbarTbar1.buttonAccounting.Click
+End Function
+''''Function name: FnSAP_ValidateAccinfo_321_Credit''''
+''''Description: Function for validating account info for 321 record''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ValidateAccinfo_321_Credit(value)
+  Call FnPerformAction("Display document flow", "Acoount321_Credit","321","ISDISPLAYED")
+  If (Trim(propValue)="321") Then
+      Call FnPerformAction("Display document flow", "Acoount321_CreditVal",value,"ISDISPLAYED")
+      If(Trim(propValue)=value) Then
+        Log.Checkpoint("Value matches for 321 credit")
+      Else
+        Log.Error("Value does not match")  
+      End If
+  End If  
+End Function
+''''Function name: FnSAP_ValidateAccinfo_321_Debit''''
+''''Description: Function for validating account info for 321 record''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ValidateAccinfo_321_Debit(value)
+  Call FnPerformAction("Display document flow", "Acoount321_Credit","321","ISDISPLAYED")
+  If (Trim(propValue)="321") Then
+      Call FnPerformAction("Display document flow", "Acoount321_CreditVal",value,"ISDISPLAYED")
+      If(Trim(propValue)=value&"-") Then
+        Log.Checkpoint("Value matches for 321 credit")
+      Else
+        Log.Error("Value does not match")  
+      End If
+  End If  
+End Function
+''''Function name: FnSAP_ValidateAccinfo_9490_Credit''''
+''''Description: Function for validating account info for 9490 record''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ValidateAccinfo_9490_Credit()
+  Call FnPerformAction("Display document flow", "Acoount9490_Credit","9490","ISDISPLAYED")
+  If (Trim(propValue)="9490") Then
+      Call FnPerformAction("Display document flow", "Acoount9490_CreditVal",order_total&"-","ISDISPLAYED")
+      If(Trim(propValue)=product_price_temp&"-") Then
+        Log.Checkpoint("Value matches")
+      Else
+        Log.Error("Value does not match")  
+      End If
+  End If
+End Function
+''''Function name: FnSAP_ValidateAccinfo_1020_Credit''''
+''''Description: Function for validating account info for 1020 record''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ValidateAccinfo_1020_Credit()
+  order_price=cdbl(product_price_temp)
+  order_priceTaxExempt=round(((10*order_price)/12),2)
+  Log.Message(order_priceTaxExempt)
+  Call FnPerformAction("Display document flow", "Acoount1020_Credit","1020","ISDISPLAYED")
+  If (Trim(propValue)="1020") Then
+      Call FnPerformAction("Display document flow", "Acoount1020_CreditVal",order_priceTaxExempt&"-","ISDISPLAYED")
+      If(Trim(propValue)=order_priceTaxExempt&"-") Then
+        Log.Message("Value matches")
+      Else
+        Log.Error("Value does not match")  
+      End If
+  End If
+End Function
+''''Function name: FnSAP_ValidateAccinfo_9341_Credit''''
+''''Description: Function for validating account info for 9431 record''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnSAP_ValidateAccinfo_9341_Credit()
+  order_price=cdbl(product_price_temp)
+  order_priceTaxExempt=round(((10*order_price)/12),2)
+  order_tax=order_price-order_priceTaxExempt
+  Log.Message("Tax value "&order_tax)
+  Call FnPerformAction("Display document flow", "Acoount9341_Credit","9341","ISDISPLAYED")
+  If (Trim(propValue)="9341") Then
+      Call FnPerformAction("Display document flow", "Acoount9341_CreditVal",order_tax&"-","ISDISPLAYED")
+      If(Trim(propValue)=order_tax&"-") Then
+        Log.Message("Value matches")
+      Else
+        Log.Error("Value does not match")  
+      End If
+  End If
+End Function
+''''Function name: FnGetdeliveryNum_OC''''
+''''Description: Function for reading delivery number for O&C order''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnGetdeliveryNum_OC
+  Call OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.splittershellShell.containershellShellcont1.shelltreeShell1).BlockByText("Purchase Order").Click
+  Call FnPerformAction("Display document flow", "DisplayDoc","","CLICK") 
+   'Call FnPerformAction("Display document flow", "POHistory","","CLICK")
+   Aliases.saplogon.mainwindowSap.userareaUsr.simplecontainerSub0Saplmegui.simplecontainerSub3Saplmeviews.simplecontainerSub2Saplmeviews.simplecontainerSub1Saplmegui.simplecontainerSub2Saplmegui.tabstripItemDetail.tabTabidt13.Click
+   Call OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.SimpleContainer("subSUB0:SAPLMEGUI:0019").SimpleContainer("subSUB3:SAPLMEVIEWS:1100").SimpleContainer("subSUB2:SAPLMEVIEWS:1200").SimpleContainer("subSUB1:SAPLMEGUI:1301").SimpleContainer("subSUB2:SAPLMEGUI:1303").TabStrip("tabsITEM_DETAIL").Tab("tabpTABIDT13").ScrollContainer("ssubTABSTRIPCONTROL1SUB:SAPLMEGUI:1316").ScrollContainer("ssubPO_HISTORY:SAPLMMHIPO:0100").CustomControl("cntlMEALV_GRID_CONTROL_MMHIPO").ContainerShell("shellcont").ShellGridView("shell")).BlockByText("600*").Click
+  Log.Enabled=False
+  Call FnPerformAction("Display document flow", "Outbnddlvnum","","CLICK")
+  Log.Enabled=True
+  Call FnGetObjectProperty("Display document flow", "Outbnddlvnum","wText")
+  Log.Message(Project.Variables.gGetObjPropValue)
+  deliverynum=Project.Variables.gGetObjPropValue
+End Function
+''''Function name: FnGetdeliveryNum_HWD''''
+''''Description: Function for reading delivery number for HWD order''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnGetdeliveryNum_HWD
+  Call OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.splittershellShell.containershellShellcont1.shelltreeShell1).BlockByText("E-Commerce Delivery").Click
+  Call FnPerformAction("Display document flow", "DisplayDoc","","CLICK") 
+  Log.Enabled=False 
+  Call FnPerformAction("Display document flow", "Outbnddlvnum","","CLICK")
+  Log.Enabled=True
+  Call FnGetObjectProperty("Display document flow", "Outbnddlvnum","wText")
+  Log.Message(Project.Variables.gGetObjPropValue)
+  deliverynum=Project.Variables.gGetObjPropValue
+End Function
+''''Function name: FnVerifyAccountinfo_Price''''
+''''Description: Function for reading price in account info tab for an orderr''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnVerifyAccountinfo_Price(price)
+   amount=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripHead.tabT12.scrollcontainerSubscreenBodySapm.simplecontainer8309Sapmv45a8309.textfield14000.wText
+   Log.Message(amount)
+   If (StrComp(price,amount,1)=0) Then
+    Log.Checkpoint("Pass- Price matched")
+   Else
+    Log.Error("Fail")
+   End If   
+End Function
+''''Function name: FnVerifyAccountinfo_status''''
+''''Description: Function for reading/validating status in account info tab for an orderr''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnVerifyAccountinfo_status(status)
+  stat= Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripHead.tabT12.scrollcontainerSubscreenBodySapm.simplecontainer8309Sapmv45a8309.CTextField("ctxtVBAK-ZPAYMENT_STATUS").wText
+  Log.Message(stat)
+  If (StrComp(status,stat,1)=0) Then
+    Log.Checkpoint("Pass- Status info matched")
+   Else
+    Log.Error("Fail")
+   End If
+End Function
+''''Function name: FnVerifyItem''''
+''''Description: Function for reading/validating item code for an orderr''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnVerifyItem(itmcode_exe)
+  'itemcode=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripOverview.tabT02.scrollcontainerSubscreenBodySapm.simplecontainerSubscreenTcSapmv4.tablecontrolSapmv45atctrlUErfAuf.textfieldRv45aMabnr.wText
+  'if (StrComp(itemcode,itmcode_exe,1)=0) Then
+   'Log.Message("Pass")
+  'Else
+   ' Log.Error("Fail")
+  'End If
+  tempstring=OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripOverview).FullText
+  Log.Message(tempstring)
+  
+  OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripOverview).CheckText("*"&itmcode_exe&"*")
+End Function
+''''Function name: FnVerifyItemCategory''''
+''''Description: Function for reading/validating item category for an orderr''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnVerifyItemCategory(catg)
+ ' category=Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripOverview.tabT02.scrollcontainerSubscreenBodySapm.simplecontainerSubscreenTcSapmv4.tablecontrolSapmv45atctrlUErfAuf.CTextField("ctxtVBAP-PSTYV[7,1]").wText
+  'If(StrComp(category,catg,1)=0) Then
+   ' Log.Message("Pass")
+  'Else
+   ' Log.Error("Fail")
+  'End If 
+  OCR.Recognize(Aliases.saplogon.mainwindowSap.userareaUsr.tabstripTaxiTabstripOverview).CheckText("*"&catg&"*")
+End Function
+
+''''Function name: FnSAP_Table_Checks''''
+''''Description: User function for SAP table navigation''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Table_Checks(tableName)
+  Call FnPerformAction("Enter Order number", "tableTxtbox","","Click")
+  Call FnPerformAction("Enter tCode", "tableTxtbox",tableName,"KEYS")
+  Call FnSndKeys("{ENTER}",1)
+  Call ExplicitDelay(2000)
+  Select Case Trim(Ucase(tableName))
+        Case "ZZZ0011"                    'Clicking an item
+            Call FnSAP_VerifyTable_ZZZ0011
+        Case "ZCM0152"    
+            Call FnSAP_VerifyTable_ZCM0152
+        Case "ZCM0255"    
+            Call FnSAP_VerifyTable_ZCM0255
+        Case Else
+          Log.Warning("FnPerformAction invalid case value :" +tableName)
+          Exit Function
+  End Select
+End Function
+''''Function name: FnSAP_VerifyTable_ZZZ0011''''
+''''Description: User function for SAP table ZZZ0011 validation''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Public Function FnSAP_VerifyTable_ZZZ0011
+  Saporder_num=order_num_temp
+  Call FnPerformAction("Enter Order number", "OrderTxtbox","","Click")
+  Call FnPerformAction("Enter tCode", "OrderTxtbox",Saporder_num,"KEYS")
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+    
+End Function
+''''Function name: FnSAP_VerifyTable_ZCM0152''''
+''''Description: User function for SAP table ZCM0152 validation''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Public Function FnSAP_VerifyTable_ZCM0152
+  Saporder_num=order_num_temp
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldVbeln.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldVbeln.SetText Saporder_num
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)
+    
+End Function
+''''Function name: FnSAP_VerifyTable_ZCM0255''''
+''''Description: User function for SAP table ZCM0255 validation''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Public Function FnSAP_VerifyTable_ZCM0255
+  Saporder_num=order_num_temp
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldVbeln.Click
+  Aliases.saplogon.mainwindowSap.userareaUsr.textfieldVbeln.SetText Saporder_num
+  Call FnPerformAction("Enter Order number", "Execute","","Click")
+  Call ExplicitDelay(2000)  
+End Function
+''''Function name: FnPaymentValidation''''
+''''Description: User function for validating payment type of an order''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Public Function FnPaymentValidation(Ptype)
+
+  Select Case Trim(Ucase(Ptype))
+        Case "PAYPAL"                    'Clicking an item
+            Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelPaypal, "Enabled", cmpEqual, False)
+        Case "GIFTCARD"    
+            Aliases.saplogon.mainwindowSap.toolbarTbar1.buttonBtn47.Click
+            Gcno=Aliases.saplogon.mainwindowSap.userareaUsr.label5045075882249906091.Text
+            If Gcno="5045075882249906091" Then
+              Log.Checkpoint("Gift card payement identified")
+            Else
+              Log.Error("Gift card payement not identified") 
+            End If
+        Case "VISA"                    'Clicking an item
+            Call FnSAP_checkMessage("VISA")    
+        Case Else
+          Log.Warning("FnPerformAction invalid case value :" +tableName)
+          Exit Function
+  End Select
+  
+  
+  
+End Function
+''''Function name: FNSAP_VerifyOrderStatus''''
+''''Description: User function for validating status of an order''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Function FNSAP_VerifyOrderStatus(status)
+  Select Case Trim(Ucase(status))
+        Case "Z"                    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelZ, "DisplayedText", cmpEqual, "Z")
+        Case "D"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelD, "DisplayedText", cmpEqual, "D")
+        Case "B"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelB, "DisplayedText", cmpEqual, "B")
+        Case "C"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelC, "DisplayedText", cmpEqual, "C")
+        Case "G"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelG, "DisplayedText", cmpEqual, "G") 
+        Case "R"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelR, "DisplayedText", cmpEqual, "R")   
+        Case "A"    
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelA, "DisplayedText", cmpEqual, "A")     
+        Case "P"
+           Call aqObject.CheckProperty(Aliases.saplogon.mainwindowSap.userareaUsr.labelP, "DisplayedText", cmpEqual, "P")   
+        Case Else
+          Log.Warning("FnPerformAction invalid case value :" +status)
+          Exit Function
+      End Select
+End Function
+
+''''Function name: FnSAP_Job_Execution''''
+''''Description: User function for SAP job execution''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Job_Execution(jobName)
+
+End Function
+
+''''Function name: FnSAP_Job_Status''''
+''''Description: User function for checking SAP job status''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_Job_Status(jobName)
+
+End Function
+
+''''Function name: FnSAP_STO_Verification''''
+''''Description: User function for STO verification''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_STO_Verification()
+
+End Function
+
+''''Function name: FnSAP_ReadDeliverynum''''
+''''Description: User function for reading delivery number''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_ReadDeliverynum()
+
+End Function
+
+''''Function name: FnSAP_ValidatePurchaseOrder''''
+''''Description: User function for validating purchase order''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+public Function FnSAP_ValidatePurchaseOrder()
+
+End Function
+''''Function name: FnSAP_Home''''
+''''Description: User function for navigating back to SAP Home page''''
+''''Last updated on: 16/11//2021- Venukrishnan VR''''
+Public function FnSAP_Home
+   For mn=1 to 10
+      Set alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap.titlebarSapEasyAccessUserMenuFor)
+      For k=0 to alltext.BlockCount - 1
+      Log.Message(alltext.Block(k).Text)
+      If InStr(alltext.Block(k).Text,"SAP Easy Access") > 0 Then
+        k=0
+        Exit For
+       Else
+         Call FnPerformAction("Ecom order details", "BackBtn","","CLICK")
+       End If
+     Next 
+     If k=0 Then
+     Exit For
+     End If
+     Set alltext=OCR.Recognize(Aliases.saplogon.mainwindowSap.titlebarSapEasyAccessUserMenuFor)
+   Next
+End Function

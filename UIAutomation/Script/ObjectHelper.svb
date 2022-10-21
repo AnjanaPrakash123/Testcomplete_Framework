@@ -1,0 +1,111 @@
+﻿
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+'*****************************************************************************************************************************
+'Function Name :FnGetObject
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetObject(byref gStepDesc,sKeyValue, byRef TestObj)
+  On Error Resume Next
+  Err.Clear
+  dim sDictProp
+  FnGetObject=False
+  If Project.Variables.gDictionaryObject.Exists(Ucase(Trim(sKeyValue))) then
+      sDictProp = Project.Variables.gDictionaryObject.item(Ucase(Trim(sKeyValue)))
+      aDictProp=Split(sDictProp,"||")
+     Select Case Ubound(aDictProp)
+     Case 0
+            oParent=aDictProp(0)
+            oProperties=""
+            iDepth=""
+            iIndex=""
+     Case 1
+            oParent=aDictProp(0)
+            oProperties=aDictProp(1)
+            iDepth=10
+            iIndex=0
+     Case 2
+            oParent=aDictProp(0)
+            oProperties=aDictProp(1)
+            iDepth=aDictProp(2)
+            iIndex=0
+     Case 3
+            oParent=aDictProp(0)
+            oProperties=aDictProp(1)
+            iDepth=aDictProp(2)
+            iIndex=aDictProp(3)
+     Case Else 
+            If Ubound(aDictProp)>3 then
+              oParent=aDictProp(0)
+              oProperties=aDictProp(1)
+              iDepth=aDictProp(2)
+              iIndex=aDictProp(3)
+            Else
+              oParent=aDictProp(0)
+              oProperties=""
+              iDepth=""
+              iIndex=""
+            End If
+     End Select 
+  Else
+        'Fail
+        Exit Function
+  End if
+  
+  aParent=Split(oParent,")")
+  aProcess=Split(aParent(0),"(")
+  aProcess(1)=Replace(aProcess(1),chr(34),"")
+  If Sys.WaitProcess(Trim(aProcess(1))).Exists Then
+     If Trim(oProperties) <> "" then
+        Dim aPropArray()
+        Dim aValueArray()
+        Err.clear
+        aProperties=Split(oProperties,"|")
+        iLimit=Ubound(aProperties)
+        ReDim Preserve aPropArray(iLimit)
+        ReDim Preserve aValueArray(iLimit)
+        For iLoop=0 to Ubound(aProperties)
+          aObjValue=Split(aProperties(iLoop),":")
+          If Ucase(Trim(aObjValue(0)))="VISIBLE" or Ucase(Trim(aObjValue(0)))="ENABLE" then
+            aObjValue(1)=cbool(aObjValue(1))
+          End If
+          aPropArray(iLoop)=Trim(aObjValue(0))
+          aValueArray(iLoop)=Trim(aObjValue(1))
+        Next
+        If Trim(iDepth)<>"" then
+          iDepth=Cint(iDepth)
+        Else
+          iDepth=10
+        End If
+        Set oWindow=eval(oParent)
+        CtrlObj=oWindow.FindAllChildren(aPropArray,aValueArray,cint(iDepth))
+        aqutils.Delay 500, "Finding Object - " & sKeyValue
+    
+        If Ubound(CtrLObj)>=0 then
+          If Trim(iIndex)<>"" then
+            iIndex=cint(iIndex)
+          Else
+            iIndex=0
+          End If
+          Set TestObj=CtrlObj(iIndex)
+          Aqutils.Delay 500
+          Sys.HighlightObject TestObj
+          FnGetObject=True
+        Else
+          Exit Function
+        End If
+      Else
+        Set TestObj=eval(oParent)
+        FnGetObject=True
+        Sys.HighlightObject TestObj
+      End If
+  End If
+  If Err.Description <> "" then
+     Err.Clear
+  End if
+  'sPropVal=aqobject.GetPropertyValue(TestObj,"name")
+  FnGetObject=True
+  Err.Clear
+End Function
+
+

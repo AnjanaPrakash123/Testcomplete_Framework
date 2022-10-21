@@ -1,0 +1,27 @@
+﻿'' [BeforeFeature]
+'Sub BeforeFeature(feature)
+'  ' Perform some action before running a feature file, for example:
+'  Log.Message("Before running the " + feature.Name + "feature file" + feature.Description + feature.Tags.item(0) )
+'  
+'End Sub
+'
+'
+'' [AfterFeature]
+'Sub AfterFeature(feature)
+' Log.Message("The " + feature.Name + " feature file has been executed" )
+'End Sub
+'
+'
+'' [BeforeScenario]
+'Sub BeforeScenario(scenario)
+'  ' Perform some action before running a scenario, for example:
+'  Log.Message("Before running the " + scenario.Name + "scenario helloo" +scenario.Tags.item(0))
+'End Sub
+'
+'
+'' [AfterScenario]
+'Sub AfterScenario(scenario)
+'  ' Perform some action after executing a scenario, for example:
+'
+'  Log.Message("The " + scenario.Name + " scenario has been executed yyooo" )
+'End Sub

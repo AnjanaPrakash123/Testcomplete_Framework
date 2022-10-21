@@ -1,0 +1,75 @@
+﻿'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT UserActions
+'USEUNIT ConfigSetup
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+'USEUNIT SAP_UserActions
+'USEUNIT WMS_UserActions
+'USEUNIT iServe_UserActions
+'USEUNIT Variables
+Function OrderTest()
+    On Error Resume Next
+    Err.Clear
+
+    Project.Variables.gTestCaseId="SAP_RC_GC_12"
+   
+    aqTestCase.Begin("R&C Order Validation")
+   
+    'GetTestData
+     Call FnGetXMLTestData()
+     Call setProjectVariables() 
+  '*************************************************
+    'Test Steps
+    '''********* Pre SAP Validation**********'''''''''''''
+    Call FnSAP_Login(sap_username,sap_password)
+    Call FnSAP_Transaction("VA03")
+     Call FnSAP_Order_Checks(order_num_temp)
+     '''*******iServe order collection*****''''''''
+    Call FnLaunchLanDesk(iserve_url)
+    Call FniServe_Login(iserve_userid_lvl40,iserve_password_lvl40)
+    Call FnGoto_Orders
+    Call FnGoto_Collect
+    Call FnEnter_Value(order_num_temp)
+    Call FnMouseClick_Value("Enter","spNearestToCenter")
+    Call WaitForText("Order Collection",30)
+    Call FnMouseClick_Value("Proved","spLeftMost")
+    Call WaitForText("Order Pickup",30)
+    Call FnValidate_Value("Apollo Excelle Womens Hybrid Bike 2015, 14")
+    Call FnValidate_Value("30.00")
+    Call FnMouseClick_Value("Pickup","spLeftMost")
+    aqUtils.Delay(5000)
+    Call FnMouseClick_Value("OK", "spRightMost")
+    Call WaitForText("Article Locate",30)
+    Call canvas.Click(328, 454) 
+    Call WaitForText("Receipt Options",30)
+    Call FnMouseClick_Value("OK", "spRightMost")
+    Call WaitForText("Email Options",30)
+    Call FnMouseClick_Value("OK", "spRightMost")
+    Call WaitForText("Customer Search",30)
+    Call OCR.Recognize(canvas).BlockByText("Bypass").Click
+  '''''************** Return********************""""""""""""""""
+    Call Fniserve_Return_RC(order_num_temp)
+    Call WaitForText("Customer Search",30)
+    Call OCR.Recognize(canvas).BlockByText("Bypass").Click
+    
+    '''''''****************SAP checks Post Return****************'''''''
+    Call FnSAP_Login(sap_username,sap_password)
+    Call FnSAP_Transaction("SE16")
+    Call FnSAP_Table_Checks("zzz0011")
+    Call FNSAP_VerifyOrderStatus("Z")
+    Call FNSAP_VerifyOrderStatus("B")
+    Call FNSAP_VerifyOrderStatus("D")
+    Call FNSAP_VerifyOrderStatus("G")
+    Call FNSAP_VerifyOrderStatus("R")
+    
+   If Err.Description <> "" then
+        Log.Message gStepDesc & " - " & Trim(Project.Variables.gTestCaseId) & " test case failed due to error : " & Err.Description
+        Project.Variables.gTestCaseStatus="FAILED"
+         Call FnWriteReportStep(Trim(Project.Variables.gTestCaseId),"FAILED",Err.Description,"")
+        Exit Function
+    End If
+     aqTestCase.End
+     Err.clear
+  End Function
+

@@ -1,0 +1,75 @@
+﻿'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT UserActions
+'USEUNIT ConfigSetup
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+'USEUNIT SAP_UserActions
+'USEUNIT WMS_UserActions
+'USEUNIT iServe_UserActions
+'USEUNIT Variables
+Function OrderTest()
+    On Error Resume Next
+    Err.Clear
+
+    Project.Variables.gTestCaseId="POS_ST_LM_070"
+   
+    aqTestCase.Begin("Loyality Management- Customer update")
+   
+    'GetTestData
+     Call FnGetXMLTestData()
+     Call setProjectVariables() 
+  '*************************************************
+    'Test Steps
+    '''*******iServe order - Keying in the item and coupon as tender type*****''''''''
+    Call FnLaunchLanDesk(iserve_url)
+    Call FniServe_Login_CS(iserve_userid_lvl40,iserve_password_lvl40)
+    
+    
+    Call textNode.Keys("TestUserF")
+    aqUtils.Delay(1000)
+    Call FnMouseClick_Value("Shift","spRightMost")
+    aqUtils.Delay(2000)
+    Call FnClickAt
+    aqUtils.Delay(1000)
+    Call textNode.Keys("GTX.com")  
+    Call FnMouseClick_Value("Search", "spBottomMost")
+    Call WaitForText("Halfords Customer Search Results",30)
+    Call FnMouseClick_Value("Accept", "spBottomMost")
+    Call WaitForText("Customer - Home",30)
+    Call FnSndKeys("{TAB}",5)
+    RandomString=GenerateRandomString
+    Call FnSndKeys(RandomString,1)
+    Call FnMouseClick_Value("Accept", "spBottomMost")
+    Call ValidateText("Modify details for TestUser Would you like to save your changes?",10)
+    Call FniServe_ClickTextBySearch("Yes")
+    
+    Call Fniserve_void_trans_CS
+    
+     Call textNode.Keys("TestUserF")
+    aqUtils.Delay(1000)
+    Call FnMouseClick_Value("Shift","spRightMost")
+    aqUtils.Delay(2000)
+    Call FnClickAt
+    aqUtils.Delay(1000)
+    Call textNode.Keys("GTX.com")
+    
+    
+     
+    Call FnMouseClick_Value("Search", "spBottomMost")
+    Call WaitForText("Halfords Customer Search Results",30)
+    Call FnMouseClick_Value("Accept", "spBottomMost")
+    Call WaitForText("Customer - Home",30)
+     Call FnMouseClick_Value("Accept", "spBottomMost")
+     Call Fniserve_void_trans_CS
+        
+   If Err.Description <> "" then
+        Log.Message gStepDesc & " - " & Trim(Project.Variables.gTestCaseId) & " test case failed due to error : " & Err.Description
+        Project.Variables.gTestCaseStatus="FAILED"
+         Call FnWriteReportStep(Trim(Project.Variables.gTestCaseId),"FAILED",Err.Description,"")
+        Exit Function
+    End If
+     aqTestCase.End
+     Err.clear
+  End Function
+

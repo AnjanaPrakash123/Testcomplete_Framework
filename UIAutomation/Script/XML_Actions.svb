@@ -1,0 +1,35 @@
+﻿
+'............Function to read XML values........................................
+
+Function Readxml(testid)
+  ' Create a COM object
+  ' If you have MSXML 6:
+  Set Doc = Sys.OleObject("Msxml2.DOMDocument.6.0")
+
+  Doc.async = False
+  xmlpath= Project.Path&"Files\vf.xml"
+  
+  ' Load data from a file
+  ' We use the file created earlier
+  Call Doc.load(xmlpath)
+  Set Node = Doc.selectNodes ("//book")
+  'Set list = CreateObject("System.Collections.ArrayList")
+  
+  Dim obj_datadict   ' Create a variable.
+  Set obj_datadict = CreateObject("Scripting.Dictionary")
+  
+  For i = 0 to Node.length - 1
+    testcaseId= Node(i).getAttribute("id")
+    If testcaseId=testid Then
+      Set ChildNodes = Node(i).childNodes
+      For j=0 to ChildNodes.length - 1
+        dataText=ChildNodes.item(j).text
+			  obj_datadict.Add j, dataText   ' Add some keys and items.
+		  Next  
+      Log.Message("Completed successfully")
+    End If 
+  Next
+  set Readxml = obj_datadict
+End Function
+
+

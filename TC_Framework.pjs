@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{24B6FA0B-0143-461A-9758-AEB9E9A9428B}" version="15.0" key="{8266833F-2A06-480C-8563-D10C5A8151B5}">
+	<children>
+		<child name="UIAutomation" key="{D3EF3263-F18E-42C0-B8F4-A5AA9F1431BD}" path="UIAutomation\UIAutomation.mds" />
+	</children>
+	<testItems key="{EE45DC81-11D0-491B-993F-5D1BE38D0090}">
+		<children>
+			<testItem key="{D3EF3263-F18E-42C0-B8F4-A5AA9F1431BD}" enabled="True" timeout="0" stopOnError="True" description="" />
+		</children>
+	</testItems>
+	<variables key="{AC124688-EBBB-4613-9F08-F53EC80DC8C0}" />
+	<analysis key="{0FD5E1AE-F73F-4D8A-97DC-A9EDE8EB2E83}" />
+	<scc key="{C900492B-D218-429C-9AA0-264B7D78CA88}" name="Git Plugin">
+		<data />
+	</scc>
+</Root>

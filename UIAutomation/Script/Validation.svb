@@ -1,0 +1,55 @@
+﻿'USEUNIT WaitProperty
+
+
+                                               'All verify/validation properties
+'-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+'1)**********.Function name:Check text with OCR********************
+''''Description: Validate existatnce of a text with OCR''''
+
+Function ValidateTextOCR(anObject,Substring)
+
+  Call OCR.Recognize(anObject).CheckText(Substring)
+ 
+End Function
+
+
+'2)**********.Function name: CheckTextContents********************
+''''Description:check text contents''''
+Function CheckTextContents(anObject, aSubstring, caseSensitive)
+
+    ' Recognize the text contents of the specified onscreen object
+    text = OCR.Recognize(anObject).FullText
+    ' Search for the occurrence of the specified substring in the recognized text
+    CheckTextContents = (aqString.Find(text, aSubstring, 0 , caseSensitive) > -1)
+   
+End Function
+
+'3)**********.Function name: verifyText********************
+''''Description:check text contents''''
+Function verifyText(obj,textToCheck,msg1,msg2)
+   If CheckTextContents(obj, textToCheck, True) Then
+    Log.Message(msg1)
+  Else
+    Log.Warning(msg2)
+  End If
+End Function
+
+'4)**********.Function name: TypeContents********************
+''''Description:Type contents''''
+Function TypeContents(obj,text)
+
+  ' Obtain the iOS TextField object and enter text in it
+  obj.Touch
+  obj.Keys(text)
+End Function
+
+'5)**********.Function name: GetFullText********************
+''''Description:Get full text from ocr object''''
+Function GetFullText(anObject)
+    ' Recognize the text contents of the specified onscreen object
+    text = OCR.Recognize(anObject).FullText
+    GetFullText=text
+     
+End Function

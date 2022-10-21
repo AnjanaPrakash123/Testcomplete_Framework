@@ -1,0 +1,73 @@
+﻿
+
+'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT UserActions
+'USEUNIT ConfigSetup
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+
+
+Sub GeneralEvents_OnStartTest(Sender)
+    
+    
+    'Declare Global variables
+    Call FnVariableDeclaration()
+    
+    'Get Config Variables
+    sConfigXmlFilePath=ProjectSuite.Path &"ProjectFiles\Config\Config.xml"
+    Call FnGetsConfigVariables(sConfigXmlFilePath)
+    Project.Variables.gTestName=Project.Variables.gConfigVarDict("TESTNAME")
+    Project.Variables.gTestEnvironment=Project.Variables.gConfigVarDict("ENVIRONMENT")
+    Project.Variables.gScreenshotType=Project.Variables.gConfigVarDict("SCREENSHOTTYPE")
+    Project.Variables.gOverallResult="PASSED"
+
+'   Get All the Test Data into dictionary object
+    sConfigXmlFilePath=ProjectSuite.Path &"ProjectFiles\TestData\TestData.xml"
+    Project.Variables.gTestDataFile=Trim(sConfigXmlFilePath)
+    
+    'Get Object Repository Path
+    sRepositoryXmlFilePath=ProjectSuite.Path &"ProjectFiles\ObjectRepository\MasterRepository.xml"
+    sObjectRepositoryPath=Trim(sRepositoryXmlFilePath)
+    
+   'Initial Setup
+    Call FnWriteReportConfigDetails_Start
+    Call FnGetObjPropFromXML("Get Objects from External Xml", sObjectRepositoryPath,oDictData)
+   
+    If Err.Description<> "" then
+        Log.Error "Script Start Failed."
+    End If
+End Sub
+
+Sub GeneralEvents_OnStartTestCase(Sender, StartTestCaseParams)
+  Project.Variables.gTestCaseStatus="PASSED"
+  TestName=StartTestCaseParams.Name
+  Call WriteReportTestcase_Start(TestName)
+End Sub
+
+Sub GeneralEvents_OnStopTest(Sender)
+    Call FnWriteReportConfigDetails_End
+    'Call Log.SaveResultsAs("C:\Work\Log\", lsHTML)
+    Call Log.SaveResultsAs("C:\Work\Log.mhtml", lsMHT)
+End Sub
+
+Sub GeneralEvents_OnStopTestCase(Sender, StopTestCaseParams)
+ Call WriteReportTestcase_End()
+ 
+End Sub
+'
+'Sub GeneralEvents_OnLogError(Sender, LogParams)
+'
+''MsgBox(LogParams)
+'End Sub
+'
+'Sub GeneralEvents_OnLogMessage(Sender, LogParams)
+''MsgBox("Passed")
+'End Sub
+'
+'Sub GeneralEvents_OnLogWarning(Sender, LogParams)
+''MsgBox("Warning")
+'End Sub
+
+
+

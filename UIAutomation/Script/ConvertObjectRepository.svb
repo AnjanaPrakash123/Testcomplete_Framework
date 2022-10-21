@@ -1,0 +1,13 @@
+﻿'USEUNIT ConfigSetup
+
+Sub ConvertObjectRepository_ExcelToXml
+  On Error Resume next
+    Err.Clear
+    sExcelPath=ProjectSuite.Path &"\ProjectFiles\ObjectRepository\MasterRepository.xlsx"
+    sXmlPath=ProjectSuite.Path &"\ProjectFiles\ObjectRepository\MasterRepository.xml"
+    Call FnConvertExcelToXML(sExcelPath,sXmlPath)
+    
+    If Err.Description<> "" then
+        Log.Error "ConvertObjectRepository_ExcelToXml - Script Start Failed." & Err.Description
+    End If
+End Sub

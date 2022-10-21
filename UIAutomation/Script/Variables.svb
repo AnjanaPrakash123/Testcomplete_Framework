@@ -1,0 +1,32 @@
+﻿public deliverynum, sap_username,sap_password,wms_url_D100,wms_url_D500,wms_username,wms_password
+public iserve_url,landesk_username,landesk_password,landesk_domain,iserve_userid_lvl40,iserve_password_lvl40
+public iserve_userid_lvl10,iserve_password_lvl10,order_num,order_type,article_num,article_price,tender_type
+public Saporder_num, propValue, order_price,order_priceTaxExempt,iserve_Order,RandomString,collDate
+public boolean_status,AmountDue, AmountDue_1,AmountDue_2, signOn_Flag,currentDate, Res_pre,Res_post,IDoc_num,order_total,PaymentType
+Dim canvas
+Dim textNode
+Dim Delivery_Address
+public customer_name,customer_add_line_1,customer_add_line_2,customer_phone,customer_email,customer_postcode,customer_country,customer_doornum,customer_county
+public Coupon,GiftCard,TradeCard,Delivery_Method
+public NormalItem1,NormalItem2,NormalItem3,bikeItem,agerestricteditem
+public order_num_temp,Ordertype,wms_flag,Msgflag,ExistingUser1
+public product_id_temp,product_1,product_2
+public product_price_temp,price_1,price_2,username_isr_email,domain_isr_email
+public catg_temp,metaPack_url,metaPack_un,metaPack_pwd 
+public wms_username_D500,wms_password_D500
+public Haz_prodcode,Hcode,H_Pcode,H_Signal_word,H_Statement
+public tcode_displaySalesOrder,tcode_iDocSearch,tcode_Program,tcode_Gen_Table_Dis,tcode_ChangeArticle,tcode_Createsalesorder
+accnt_info_sts="2"
+
+'test001
+public product_desc
+
+Set browser = Aliases.browser
+Set page = browser.pageLandeskRemoteControl
+Set canvas = page.canvasRccanvas
+Set textNode = page.textnode
+
+
+'**********************************************VF**************************************************************
+
+Dim productDetails

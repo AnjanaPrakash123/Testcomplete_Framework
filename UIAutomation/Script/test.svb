@@ -1,0 +1,25 @@
+﻿
+'USEUNIT XML_Actions
+'USEUNIT PythonIntegration
+'USEUNIT ExcelActions
+'USEUNIT Database_Actions
+
+Sub sample()
+
+  call WriteExcel("Tc_01","Sheet1")
+
+  
+End Sub
+
+' [Then produc is added to basket]
+Sub produc_is_added_to_basket()
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then produc is aed to basket]
+Sub produc_is_aed_to_basket()
+  
+
+
+
+End Sub

@@ -1,0 +1,20 @@
+﻿
+'1)**********.Function name: Touch Actions********************
+''''Description:Touch objects''''
+
+Function TouchObjects(Action,obj)
+  Select case Action
+  
+      Case OneTouch
+        Call TouchObject(obj)
+  End Select
+       
+End Function
+
+'2)**********.Function name: Touch object********************
+''''Description:Touch objects''''
+Function TouchObject(Obj)
+  obj.Touch
+  
+End Function
+

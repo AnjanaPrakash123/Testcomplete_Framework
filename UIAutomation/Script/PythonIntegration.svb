@@ -1,0 +1,67 @@
+﻿
+'..............Function to integrate .py file.....................................
+Sub pythonScriptIntegration()
+
+Dim ObjExec
+  Dim strFromProc
+  
+  PythonExe ="C:\Users\Admin\AppData\Local\Programs\Python\Python310\python.exe"
+  PythonScript ="C:\Users\Admin\OneDrive - G10X\Desktop\Hello.py"
+  loc=" "
+  Set objShell =CreateObject("WScript.Shell")
+  Set ObjExec = objShell.Exec("cmd.exe /c " & PythonExe &loc & PythonScript)
+  Do
+      strFromProc = ObjExec.StdOut.ReadLine()
+     consoleoutPut=consoleoutPut &vbCrLf& + strFromProc
+  Loop While Not ObjExec.Stdout.atEndOfStream
+  If InStr(consoleoutPut, Expected_response) >0 Then
+	  Log.Message("Script executed successfully")
+    Log.Message( "Response from command prompt is : "+consoleoutPut)
+  Else
+     Log.Message("Script execution failed")
+     Log.Message( "Response from command prompt is : "+consoleoutPut)
+     Exit Sub
+  End If
+  
+End Sub
+
+'............Function to check connection with Robotic arm...............................
+Sub checkPingStatus(command, Expected_response)
+  Dim hostname
+  hostname = "172.16.50.45"
+  loc=" "
+  Set objShell =CreateObject("WScript.Shell")
+  Set ObjExec = objShell.Exec("cmd.exe /c " &command &loc &hostname)
+  Do
+      strFromProc = ObjExec.StdOut.ReadLine()
+     consoleoutPut=consoleoutPut &vbCrLf& + strFromProc
+  Loop While Not ObjExec.Stdout.atEndOfStream
+  If InStr(consoleoutPut, Expected_response) >0 Then
+	  Log.Message("Connection established successfully")
+    Log.Message( "Response from command prompt is : "+consoleoutPut)
+  Else
+     Log.Message("Connection failed")
+     Log.Message( "Response from command prompt is : "+consoleoutPut)
+     Err.Raise 100, "Run time Error"
+     Exit Sub
+  End If
+  
+End Sub
+
+
+'................check ipAddress in commandprompt........................................................
+Sub check_ipAddress(command,Expected_response)
+  command=command
+  Set objShell =CreateObject("WScript.Shell")
+  Set ObjExec = objShell.Exec("cmd.exe /c " &command )
+  Do
+      strFromProc = ObjExec.StdOut.ReadLine()
+     consoleoutPut=consoleoutPut &vbCrLf& + strFromProc
+  Loop While Not ObjExec.Stdout.atEndOfStream
+  If InStr(consoleoutPut, Expected_response) >0 Then
+	  Log.Message("IPFOUND")
+  Else
+     Log.Message("IP NOT FOUND")
+  End If
+  Log.Message( "Response from command prompt is : "+consoleoutPut)
+End Sub

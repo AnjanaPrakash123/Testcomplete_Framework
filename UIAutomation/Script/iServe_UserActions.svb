@@ -1,0 +1,744 @@
+﻿'''''''All iServe related user actions are listed here in this script''''''''''
+'USEUNIT UserActions
+'USEUNIT Variables
+'USEUNIT CommonHelper
+  
+
+''''Function name: FnAddarticle''''
+''''Description: add an article via manual keying the article number''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnAddarticle(artno)
+  
+End Function
+''''Function name: FnLaunchLanDesk''''
+''''Description: Launches LAN desk for iserve access''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+public Function FnLaunchLanDesk(url)
+  Call fnKillProcess("Kill any open instances of application","chrome.exe")
+  Browsers.Item(btChrome).Run(url)
+  aqUtils.Delay(5000)
+  'LLCollection1.LLP4.Execute
+  Call FnSecurity("Advanced")
+  Call FnSecurity("Proceed to")
+  Set browser=Sys.Browser("chrome")
+  Set page=browser.Page("*")
+  
+  Set txtbox_iSrvUid=page.NativeWebObject.Find("idStr","username_input")
+  Set txtbox_iSrvPwd=page.NativeWebObject.Find("idStr","password_input")
+  Set txtbox_iSrvDomain=page.NativeWebObject.Find("idStr","domain_input")
+  Set btn_iSrvLogin=page.NativeWebObject.Find("idStr","login_btn")
+  aqUtils.Delay(15000)
+  txtbox_iSrvUid.SetText(landesk_username)
+  txtbox_iSrvPwd.SetText(landesk_password)
+  txtbox_iSrvDomain.SetText(landesk_domain)
+  btn_iSrvLogin.Click
+  Indicator.Hide
+  aqUtils.Delay(7000)
+End Function
+''''Function name: FnSecurity''''
+''''Description: Manages the security certificate screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnSecurity(val)
+
+  Set alltext=OCR.Recognize(Aliases.browser.pageLandeskRemoteControl)
+  For k=0 to alltext.BlockCount - 1
+    Log.Message(alltext.Block(k).Text)
+    If InStr(alltext.Block(k).Text,val) > 0 Then
+      alltext.Block(k).Click
+      'aqUtils.Delay(2000)
+      'alltext_temp.Block(k).Click
+      Exit For
+     End If
+   Next 
+End Function  
+
+''''Function name: FniServe_Login''''
+''''Description: Iserve application login without customer search''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_Login(uname,pwd)
+  If ImageRepository.ImageSet1.Item5.Exists Then
+    ImageRepository.ImageSet1.Item5.Click
+  End If
+  Call canvas.Click(231, 225)
+  Call FniServe_RecoveryScenario
+  If signOn_Flag=1 Then
+    Exit Function
+  End If
+  Call textNode.Keys(uname)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+  Call WaitForText("Password",30)
+  Call textNode.Keys(pwd)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+  Call WaitForText("Customer Search",30)
+  Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+  Call WaitForText("Article Locate",30)
+  
+End Function
+''''Function name: FniServe_Login_CS''''
+''''Description: Iserve application login with customer search''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_Login_CS(uname,pwd)
+  If ImageRepository.ImageSet1.Item5.Exists Then
+    ImageRepository.ImageSet1.Item5.Click
+  End If
+  Call canvas.Click(231, 225)
+  Call FniServe_RecoveryScenario
+  If signOn_Flag=1 Then
+    Exit Function
+  End If
+  Call textNode.Keys(uname)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+  Call WaitForText("Password",30)
+  Call textNode.Keys(pwd)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+  Call WaitForText("Customer Search",30)
+  
+End Function
+''''Function name: FniServe_ArticleKeyin''''
+''''Description: Article search by keying in''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_ArticleKeyin(Artnum)
+  Call textNode.Keys(Artnum)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+End Function
+''''Function name: FnGoto_Orders''''
+''''Description: Navigation to Orders screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnGoto_Orders
+   Call OCR.Recognize(canvas).BlockByText("Orders").Click
+   Call WaitForText("Collect",30)
+End Function
+''''Function name: FnGoto_Collect''''
+''''Description: Navigation to Collect screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnGoto_Collect
+   Call OCR.Recognize(canvas).BlockByText("Collect").Click
+   Call WaitForText("Customer Search",30)
+End Function
+''''Function name: FnEnter_Value''''
+''''Description: Sending values to iserve screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnEnter_Value(val)
+  Call textNode.Keys(val)
+End Function
+''''Function name: FnMouseClick_Value''''
+''''Description: Mouse click based on the value and its screen position''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnMouseClick_Value(val,position)
+  Select Case Trim(position)
+    Case "spNearestToCenter"
+      Call OCR.Recognize(canvas).BlockByText(val,spNearestToCenter).Click
+    Case "spLeftMost"
+      Call OCR.Recognize(canvas).BlockByText(val,spLeftMost).Click
+    Case "spBottomMost"
+      Call OCR.Recognize(canvas).BlockByText(val,spBottomMost).Click
+    Case "spRightMost"
+      Call OCR.Recognize(canvas).BlockByText(val,spRightMost).Click
+    Case "spTopMost"
+      Call OCR.Recognize(canvas).BlockByText(val,spTopMost).Click  
+    Case Else  
+      Call OCR.Recognize(canvas).BlockByText(val).Click 
+  End Select
+    
+End Function
+''''Function name: Fniserve_Return_HWD''''
+''''Description: Perform return of an order(HWD)''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function Fniserve_Return_HWD(ordernum)
+  Call FnMouseClick_Value("Return","spRightMost")
+  Call WaitForText("Return Receipt Information",30) 
+  Call textNode.Keys("[Del]")  
+  aqUtils.Delay(3000) 
+  Call  FnSndKeys("{TAB}",9)
+  ''Call canvas.Click(693, 355)
+  aqUtils.Delay(2000)
+  Call textnode.Keys(ordernum)
+  Call FnMouseClick_Value("Search", "spRightMost")
+  Call WaitForText("Return With Receipt",30) 
+  Call FnMouseClick_Value("Return All","spLeftMost")
+  Call WaitForText("No Longer Needed or Wanted",30) 
+  Call FnMouseClick_Value("No Longer Needed or Wanted","")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("OK","")
+  Call WaitForText("Reason Code",30)
+  Call FnMouseClick_Value("OK","spBottomMost")
+  Call WaitForText("Return With Receipt",30)
+  Call FnMouseClick_Value("Finished","spRightMost")
+  Call WaitForText("Article Locate",30)
+  Call FnClick_basket
+  Call WaitForText("Gift Card",30)
+  Call FnMouseClick_Value("Gift Card","spRightMost")
+  Call WaitForText("Gift Card Number",30)
+  Call textnode.Keys("5045075882249906091")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("Enter","")
+  Call WaitForText("Would you like to issue a new card, or add value to",30)
+  Call FniServe_ClickTextBySearch("Existing Card")
+  Call WaitForText("An attempt to print failed due to a timeout. Do you",30)
+  Call FniServe_ClickTextBySearch("Override")
+  Call WaitForText("Customer Search",30)
+   Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+End Function
+
+''''Function name: Fniserve_PartialReturn_HWD''''
+''''Description: Perform return of an order(HWD)''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function Fniserve_PartialReturn_HWD(ordernum)
+  Call FnMouseClick_Value("Return","spRightMost")
+  Call WaitForText("Return Receipt Information",30) 
+  Call textNode.Keys("[Del]")  
+  aqUtils.Delay(3000) 
+  Call  FnSndKeys("{TAB}",9)
+  ''Call canvas.Click(693, 355)
+  aqUtils.Delay(2000)
+  Call textnode.Keys(ordernum)
+  Call FnMouseClick_Value("Search", "spRightMost")
+  Call WaitForText("Return With Receipt",30) 
+  Call FnMouseClick_Value("Return Item(s)","spLeftMost")
+  Call WaitForText("No Longer Needed or Wanted",30) 
+  Call FnMouseClick_Value("No Longer Needed or Wanted","")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("OK","")
+  Call WaitForText("Reason Code",30)
+  Call FnMouseClick_Value("OK","spBottomMost")
+  Call WaitForText("Return With Receipt",30)
+  Call FnMouseClick_Value("Finished","spRightMost")
+  Call WaitForText("Article Locate",30)
+  Call FnClick_basket
+  Call WaitForText("Gift Card",30)
+  Call FnMouseClick_Value("Gift Card","spRightMost")
+  Call WaitForText("Gift Card Number",30)
+  Call textnode.Keys("5045075882249906091")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("Enter","")
+  Call WaitForText("Would you like to issue a new card, or add value to",30)
+  Call FniServe_ClickTextBySearch("Existing Card")
+  Call WaitForText("An attempt to print failed due to a timeout. Do you",30)
+  Call FniServe_ClickTextBySearch("Override")
+  Call WaitForText("Customer Search",30)
+   Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+End Function
+
+''''Function name: Fniserve_Return_RC''''
+''''Description: Perform return of an order(RC)''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function Fniserve_Return_RC(ordernum)
+  Call WaitForText("Article Locate",30)
+  Call FnMouseClick_Value("Return","spRightMost")
+  Call WaitForText("Return Receipt Information",30) 
+  'Call canvas.Click(502, 261)
+  aqUtils.Delay(2000)
+  Call FnSndKeys ("{TAB}",9)
+  aqUtils.Delay(2000)
+  Call textnode.Keys(ordernum)
+  Call FnMouseClick_Value("Search", "spRightMost")
+  Call WaitForText("Return With Receipt",30) 
+  Call FnMouseClick_Value("Return All","spLeftMost")
+  Call WaitForText("No Longer Needed or Wanted",30) 
+  Call FnMouseClick_Value("No Longer Needed or Wanted","")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("OK","")
+  Call WaitForText("Reason Code",30)
+  Call FnMouseClick_Value("OK","")
+  Call WaitForText("Return With Receipt",30)
+  Call FnMouseClick_Value("Finished","spRightMost")
+  Call WaitForText("Article Locate",30)
+  'Call canvas.Click(328, 454)
+  Call FnClick_basket
+  Call WaitForText("Gift Card",30)
+  Call FnMouseClick_Value("Gift Card","spRightMost")
+  Call WaitForText("Gift Card Number",30)
+  Call textnode.Keys("5045075882249906091")
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("Enter","")
+  aqUtils.Delay(10000)
+  Call FniServe_ClickTextBySearch("Existing Card")
+  aqUtils.Delay(7000)
+  Call WaitForText("An attempt to print failed due to a timeout. Do you",30)
+  Call FniServe_ClickTextBySearch("Override")
+  End Function
+''''Function name: FniServe_Return_Card''''
+''''Description: Return tender option as card''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FniServe_Return_Card()
+  Call WaitForText("Suggested Return Tender",30)
+  Call FnMouseClick_Value("Suggested Return Tender","")
+  Call WaitForText("Enterprise Return: Suggested Tender",30)
+  Call FnMouseClick_Value("OK","")
+End Function
+''''Function name: FniServe_Return_Card''''
+''''Description: Validate /Checkpoint for value present in the screen''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function FnValidate_Value(val)
+  Call OCR.Recognize(Aliases.browser.pageLandeskRemoteControl.FindElement("#rccanvas")).CheckText("*"&val&"*")
+End Function
+''''Function name: Fnemailid''''
+''''Description: User function allows the desired email id in the Email Options screen''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function Fnemailid(emailid)
+
+End Function
+
+''''Function name: FnAmountDue''''
+''''Description: User function allows entering the Amount Due''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnAmountDue(amountdue)
+
+End Function
+
+''''Function name: FnCouponnumentry''''
+''''Description: User function allows the transaction with Coupon tender''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnCouponnumentry(couponnum)
+
+End Function
+
+''''Function name: FnSelectoptionfrmmenu''''
+''''Description: User function for selecting Back office Option''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnSelectoptionfrmmenu(fnname)
+  
+  
+End Function
+
+''''Function name: Fnjournal''''
+''''Description: User function allows to execute query in Electronic Journal Viewer''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function Fnjournal(StoreNo,fromdate,todate,transactiontype,tenders)
+
+End Function
+
+
+
+''''Function name: FnReturnreceipt''''
+''''Description: User function allows return the receipt by entering the Transaction number ''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnReturnreceipt(transactionnum)
+
+End Function
+
+ 
+''''Function name: FnRefundamt''''
+''''Description: User function allows to input the refund amount ''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function  FnRefundamt(refundamt)
+
+End Function
+
+''''Function name: FnGiftcardnum''''
+''''Description: User function allows enter the Gift Card number ''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function FnGiftcardnum(gcnumber)
+
+End Function
+
+
+''''Function name: Fnipttradecard''''
+''''Description: User function allows to input Trade card number ''''
+''''Last updated on: 16/11/2021- Ammu Kuriakose''''
+public Function  Fnipttradecard(tradecardnum)
+
+End Function
+
+Function CheckTextContents(anObject, aSubstring, caseSensitive)
+  ' Recognize the text contents of the specified onscreen object
+  text = OCR.Recognize(anObject).FullText
+  ' Search for the occurrence of the specified substring in the recognized text
+  CheckTextContents = (aqString.Find(text, aSubstring, 0 , caseSensitive) > -1)
+End Function
+''''Function name: WaitForTextNClick''''
+''''Description: Wait for the text and click it''''
+''''Last updated on: 16/11/2021- AMMU K''''
+Function WaitForTextNClick(textToWait,n,location)
+  
+  totalTimeWait= n*1000
+  interval=totalTimeWait/5000
+  stat=0
+  ' Delay the test execution until the onscreen object text includes the expected substring
+  For i = 1 to interval
+    aqUtils.Delay(5000)
+    If (CheckTextContents(canvas, textToWait, False)=True) Then
+      stat=1
+      Call FnMouseClick_Value(textToWait,location)
+      Exit For      
+    End If
+  Next
+  If (stat=0) Then
+    Log.Message("Expected text not found "&textToWait)
+  End If
+ 
+End Function
+''''Function name: WaitForText''''
+''''Description: Wait for a text to present for a given time in seconds''''
+''''Last updated on: 16/11/2021- AMMU K''''
+
+Function WaitForText(textToWait,n)
+  
+  totalTimeWait= n*1000
+  interval=totalTimeWait/5000
+  stat=0
+  ' Delay the test execution until the onscreen object text includes the expected substring
+  For i = 1 to interval
+    aqUtils.Delay(5000)
+    If (CheckTextContents(canvas, textToWait, False)=True) Then
+      stat=1
+      Exit For      
+    End If
+  Next
+  If (stat=0) Then
+    Log.Message("Expected text not found "&textToWait)
+  End If
+ 
+End Function
+''''Function name: ValidateText''''
+''''Description: Validate existatnce of a text in the iserve screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function ValidateText(textToWait,n)
+  
+  totalTimeWait= n*1000
+  interval=totalTimeWait/5000
+  stat=0
+  ' Delay the test execution until the onscreen object text includes the expected substring
+  For i = 1 to interval
+    aqUtils.Delay(5000)
+    If (CheckTextContents(canvas, textToWait, False)=True) Then
+      stat=1
+      Log.Checkpoint(textToWait&" Expected text found")
+      Exit For      
+    End If
+  Next
+  If (stat=0) Then
+    Log.Error("Expected text not found "&textToWait)
+  End If
+ 
+End Function
+''''Function name: FniServe_RecoveryScenario''''
+''''Description: Recover the iserve screen to home screen''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_RecoveryScenario
+  
+  totalTimeWait= 30*1000
+  interval=totalTimeWait/5000
+  stat=0
+  ' Delay the test execution until the onscreen object text includes the expected substring
+  For i = 1 to interval
+    aqUtils.Delay(5000)
+    If (CheckTextContents(canvas, "Sign On", False)=True) Then
+      stat=1
+      Exit Function      
+    End If
+  Next
+  If (stat=0) Then
+    For j=1 to 5
+      If (CheckTextContents(canvas, "Customer Search", False)=True) Then
+        Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+        Call WaitForText("Article Locate",30)
+        signOn_Flag=1
+        Exit Function      
+      End If
+      If (CheckTextContents(canvas, "Void Tran", False)=True) Then
+        stat=1
+        Call Fniserve_void_trans 
+        Exit Function     
+      End If
+      
+      Call FnSndKeys("{ESC}",1)
+      aqUtils.Delay(7000)
+      If (CheckTextContents(canvas, "Sign On", False)=True) Then
+        stat=1
+        Exit Function      
+      End If
+      
+    Next
+  End If
+ 
+End Function
+''''Function name: Fniserve_void_trans''''
+''''Description: void the transaction in iserve''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function Fniserve_void_trans
+  Call OCR.Recognize(canvas).BlockByText("Void Tran").Click
+  aqUtils.Delay(7000)
+  If (CheckTextContents(canvas, "Customer Search", False)=True) Then
+        Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+        Call WaitForText("Article Locate",30)
+        signOn_Flag=1
+        Exit Function      
+  End If
+  Call WaitForText("OK (F1)",30)
+  Call OCR.Recognize(canvas).BlockByText("OK (F1)").Click
+  Call WaitForText("Reason Code",30)
+  Call OCR.Recognize(canvas).BlockByText("OK").Click
+  Call WaitForText("Customer Search",30)
+  Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+  Call WaitForText("Article Locate",30)
+  signOn_Flag=1
+End Function
+''''Function name: Fniserve_void_trans_CS''''
+''''Description: void the transaction in iserve for customer search''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function Fniserve_void_trans_CS
+  Call WaitForText("Void Tran",30)
+  Call OCR.Recognize(canvas).BlockByText("Void Tran").Click
+  aqUtils.Delay(7000)
+  Call WaitForText("OK (F1)",30)
+  Call OCR.Recognize(canvas).BlockByText("OK (F1)").Click
+  Call WaitForText("Reason Code",30)
+  Call OCR.Recognize(canvas).BlockByText("OK").Click
+  Call WaitForText("Customer Search",30)
+  'Call OCR.Recognize(canvas).BlockByText("Bypass").Click 
+  'Call WaitForText("Article Locate",30)
+  'signOn_Flag=1
+End Function
+''''Function name: FnReadOrderCollDate''''
+''''Description: Read the collection date of an order for validation''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnReadOrderCollDate()
+
+  temp_text = OCR.Recognize(canvas).BlockByText("*Next REDDITCH delivery is*").Text
+  date_temp=Split(temp_text,"delivery is")
+  date_temp_1=Split(date_temp(1),",")
+  date_val=Trim(date_temp_1(0))
+  indiVal=Split(date_val,"/")
+  D=indiVal(0)
+  M=indiVal(1)
+  Y=indiVal(2)
+  Call textNode.Keys(D)
+  Call textNode.Keys(M)
+  Call textNode.Keys(Y)
+End Function
+''''Function name: FnFutureCollDate''''
+''''Description: Calculate and enter the future date for collection based on the current date''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnFutureCollDate(days)
+  
+  dt=now+days
+  collDate=WeekdayName(Weekday(date()+days))&", "&MonthName(Month(date()+days))&" "&Right(String(2,"0")&day(date()+days),2)&", "&Year(date()+days)
+  Call textNode.Keys(Right(String(2,"0")&day(dt),2))
+  Call textNode.Keys(Right(String(2,"0")&Month(dt),2))
+  Call textNode.Keys(Year(dt))
+  
+End Function
+''''Function name: GenerateRandomString''''
+''''Description: Function for generating random string''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function GenerateRandomString
+      str=""
+      min=1
+      max=26
+      LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      Randomize
+      
+      Log.Message(Int((max-min+1)*Rnd+min))
+      For i = 1 to 4
+      temp=Mid( LETTERS, Int((max-min+1)*Rnd+min), 1 )
+      Log.Message(temp)
+      str = str&temp
+      Next
+      Log.Message(str)
+      GenerateRandomString = str
+End Function
+''''Function name: FniServe_ReadTotal''''
+''''Description: Function for reading total due amount from iserve''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_ReadTotal()
+  Call FnValidate_Value(("Amount Due:"))
+  text_temp= OCR.Recognize(canvas).BlockByText("*Amount Due:*").Text
+  AmountDue_temp=Split(text_temp,"£")
+  AmountDue=Trim(AmountDue_temp(1))
+  Log.Message(AmountDue)
+  AmountDue_temp=Split(AmountDue,".")
+  AmountDue_1=AmountDue_temp(0)
+  Log.Message(AmountDue_1)
+  AmountDue_2=AmountDue_temp(1)
+  Log.Message(AmountDue_2)
+End Function
+''''Function name: FniServe_ReadOrderNum''''
+''''Description: Function for reading order number from iserve''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_ReadOrderNum()
+  text_temp= OCR.Recognize(canvas).BlockByText("*Order Number: *").Text
+  Order_temp=Split(text_temp,": ")
+  iserve_Order=Trim(Order_temp(1))
+  Log.Message(iserve_Order)
+End Function
+''''Function name: FniServe_PayByCoupons''''
+''''Description: Function for coupon transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_PayByCoupons()
+  Call FnMouseClick_Value("Coupons", "spRightMost")
+  Call WaitForText("Coupons Amount",30)
+  Call textNode.Keys(AmountDue_1)
+  Call ExplicitDelay(2000)
+  Call textNode.Keys(AmountDue_2)
+  Call ExplicitDelay(2000)
+  Call OCR.Recognize(canvas).BlockByText("Enter").Click
+  Call WaitForText("Coupon Number Entry",30)
+  Call textNode.Keys(Coupon)
+  Call FnMouseClick_Value("OK", "")
+End Function
+''''Function name: FniServe_PayByLOC''''
+''''Description: Function for LOC transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_PayByLOC
+   Call WaitForText("LOC",30)
+   Call FnMouseClick_Value("LOC","spRightMost")
+   Call WaitForText("Proof of Identification",30)
+   Call FnMouseClick_Value("Driving Licence","spLeftMost")
+   Call FnMouseClick_Value("OK","spBottomMost")
+   Call WaitForText("Letter of Collection Reference Number",30)
+   Call textnode.Keys("22011832349")
+   Call FnMouseClick_Value("OK","spBottomMost")
+   Call WaitForText("LoC agreement value exceeds the balance to be",30)
+   Call FniServe_ClickTextBySearch("OK")
+End Function
+''''Function name: FniServe_PayByEuro''''
+''''Description: Function for EURO transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_PayByEuro
+   Call WaitForText("Euro",30)
+   Call ValidateText("Euro",30)
+   Call FnMouseClick_Value("Euro","spRightMost")
+   Call WaitForText("Euro Amount",30)
+   temp_amount=(CInt(AmountDue)-5)*100
+   Log.Message(temp_amount)
+   Call textnode.Keys(CStr(temp_amount))
+   Call FnMouseClick_Value("Enter","spBottomMost")
+
+End Function
+''''Function name: FniServe_PayByCash''''
+''''Description: Function for Cash transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_PayByCash  
+  
+   Call textnode.Keys(CStr(AmountDue))
+   Call FnMouseClick_Value("Cash","spLeftMost")
+
+End Function
+''''Function name: FniServe_PayByGC''''
+''''Description: Function for GC transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_PayByGC(GC)
+ 
+  Call WaitForText("Gift Card",30)
+  Call FnMouseClick_Value("Gift Card","spRightMost")
+  Call WaitForText("Gift Card Number",30)
+  Call textnode.Keys(GC)
+  aqUtils.Delay(2000)
+  Call FnMouseClick_Value("Enter","")
+  
+End Function
+''''Function name: FnDateForReturn''''
+''''Description: Function for calculating return date of an order''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnDateForReturn
+    days=day(now)
+  If days < 10 Then
+    days="0"&CStr(days)
+  End If
+  years=Right(Year(Date()),2)
+  months= month(now)
+  If months < 10 Then
+    months="0"&CStr(months)
+  End If
+  currentDate = days&months&years
+  
+End Function
+''''Function name: FniServe_ClickTextBySearch''''
+''''Description: Function for clicking a dynamic text after screen search uisng OCR''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_ClickTextBySearch(val)
+  Set alltext=OCR.Recognize(canvas)
+  For k=0 to alltext.BlockCount - 1
+    Log.Message(alltext.Block(k).Text)
+    If InStr(alltext.Block(k).Text,val) > 0 Then
+      alltext.Block(k).Click
+      'aqUtils.Delay(2000)
+      'alltext_temp.Block(k).Click
+      Exit For
+     End If
+   Next 
+End Function
+''''Function name: FniServe_VerifyTextBySearch''''
+''''Description: Function for verifying a dynamic text after screen search uisng OCR''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FniServe_VerifyTextBySearch(initialval,count,finalval)
+  Set alltext=OCR.Recognize(canvas)
+  For k=0 to alltext.BlockCount - 1
+    Log.Message(alltext.Block(k).Text)
+    If InStr(alltext.Block(k).Text,initialval) > 0 Then
+      If InStr(alltext.Block(k+count).Text,finalval) > 0 Then
+        Log.Checkpoint("Value found "&finalval)
+      Else
+        Log.Error("Value not found")
+      End If
+      'aqUtils.Delay(2000)
+      'alltext_temp.Block(k).Click
+      Exit For
+     End If
+   Next 
+End Function
+''''Function name: ReadRESQty''''
+''''Description: Function for reading and verifying reserve qty of an article''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function ReadRESQty(itmCode)
+  Set alltext=OCR.Recognize(canvas)
+  For k=0 to alltext.BlockCount - 1
+    Log.Message(alltext.Block(k).Text)
+    If InStr(alltext.Block(k).Text,itmCode) > 0 Then
+      temp_qty= alltext.Block(k+2).Text
+      qty=Cint(temp_qty)
+      'aqUtils.Delay(2000)
+      'alltext_temp.Block(k).Click
+      Log.Message("Res "&qty)
+      ReadRESQty=qty
+      Exit For
+      Exit Function
+     End If
+   Next 
+End Function
+''''Function name: FnCompareRes''''
+''''Description: Function for comparing reserve qty of an article pre and post transaction''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnCompareRes
+  Log.Message(Res_pre)
+  Log.Message(Res_post)
+  Res_pre_new=Res_pre + 1
+  Log.Message(Res_pre_new)
+  If Res_pre_new = Res_post Then
+    Log.Checkpoint("RES value incremented")
+    Exit Function
+  End If
+  Log.Error("RES value didnt match")
+End Function
+''''Function name: FnClickAt''''
+''''Description: Function for clicking @ sign using image''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnClickAt
+  If ImageRepository.ImageSet1.Item2.Exists Then
+    ImageRepository.ImageSet1.Item2.Click
+    Exit Function
+  End If
+  ImageRepository.ImageSet1.Item3.Click
+End Function
+''''Function name: FnClick_basket''''
+''''Description: Function for clicking basket icon using image''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnClick_basket
+  ImageRepository.ImageSet1.Item1.Click
+End Function
+''''Function name: FnEnquiryExit''''
+''''Description: Function for clicking  Exit icon using image''''
+''''Last updated on: 16/11/2021- Venukrishnan VR''''
+Function FnEnquiryExit
+  ImageRepository.ImageSet1.Item4.Click
+  ''4 tabs
+End Function
+
+Function FniServe_ExistingUser_split(user)
+  If InStr(user,"@") Then
+    temp=Split(user,"@")
+    username_isr_email=temp(0)
+    domain_isr_email=temp(0)
+  End If
+End Function

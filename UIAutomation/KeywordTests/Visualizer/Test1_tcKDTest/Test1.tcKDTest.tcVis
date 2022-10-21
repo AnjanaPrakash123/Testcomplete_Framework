@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{42D2222C-ACA2-405F-8E67-05D5C42EB839}" version="2">
+	<data key="{B4DF69CD-841B-4841-A29B-5A7828B2F269}">
+		<item typeId="{87B03792-E854-4F5D-9F33-165F1F874209}" version="2" lineNo="0" kind="0" dateTime="44567.2030324074" objectName="Aliases.browser.BrowserWindow" objectLeft="284" objectTop="9" objectRight="332" objectBottom="23" clickPointX="320" clickPointY="9" imageFileName="tcvi1369186500127962.png" storageFileName="" needUpdate="False" rectColor="255" />
+		<item typeId="{87B03792-E854-4F5D-9F33-165F1F874209}" version="2" lineNo="3" kind="0" dateTime="44567.2030671296" objectName="Aliases.browser.pageLandeskRemoteControl.canvasRccanvas" objectLeft="430" objectTop="71" objectRight="1318" objectBottom="737" clickPointX="1274" clickPointY="97" imageFileName="tcvi1369189140127963.png" storageFileName="" needUpdate="False" rectColor="255" />
+		<item typeId="{87B03792-E854-4F5D-9F33-165F1F874209}" version="2" lineNo="4" kind="0" dateTime="44567.2031018519" objectName="Aliases.browser.pageLandeskRemoteControl.canvasRccanvas" objectLeft="430" objectTop="71" objectRight="1318" objectBottom="737" clickPointX="1274" clickPointY="97" imageFileName="tcvi1369192796127966.png" storageFileName="" needUpdate="False" rectColor="255" />
+	</data>
+</Root>

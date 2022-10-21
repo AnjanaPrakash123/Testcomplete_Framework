@@ -1,0 +1,21 @@
+﻿
+
+Function connectDatabase()
+  Dim objConnection 
+  Set objConnection = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  ConnectString = "Driver={MySQL ODBC 8.0 Unicode Driver};Server=localhost;Database=testdb;User=root;Password=Anjana176@#;Option=3;"
+  objConnection.Open ConnectString
+  set connectDatabase = objConnection 
+  
+  
+  'SqlQuery = "SELECT * from sampletest"
+  'Set ResultSet = objConnection.Execute(SqlQuery)
+ ' Do Until ResultSet.EOF
+    'MsgBox "Test Name = " + CStr(ResultSet("TestName")) 
+   ' ResultSet.MoveNext
+  'Loop
+
+  
+  
+End Function

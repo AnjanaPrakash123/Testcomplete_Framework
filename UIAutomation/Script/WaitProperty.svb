@@ -1,0 +1,14 @@
+﻿'USEUNIT Validation       
+                                             'All wait properties are mentioned here
+'-------------------------------------------------------------------------------------------------------------------------------------------------
+
+'1) ***********Function name: WaitForText***********************
+    ''''Description: Wait for the text ''''
+Function WaitForText(obj,textToWait,Time)
+
+  ' Delay the test execution until the onscreen object text includes the expected substring
+  While Not CheckTextContents(obj, textToWait, False)
+    Delay(Time)
+  Wend
+
+End Function

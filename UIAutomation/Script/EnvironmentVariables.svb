@@ -1,0 +1,670 @@
+﻿
+'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT ReportHelper
+'USEUNIT UserActions
+'USEUNIT ConfigSetup
+'USEUNIT Variables
+'*****************************************************************************************************************************
+'Function Name : FnVariableDeclaration
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnVariableDeclaration ()
+    on Error Resume Next
+    Err.Clear
+    FnVariableDeclaration=False
+    If Project.Variables.VariableExists("gXMLResultFolder") then
+      Project.Variables.RemoveVariable("gXMLResultFolder")
+    End If
+    Project.Variables.AddVariable "gXMLResultFolder","String"
+    Project.Variables.gHTMLResultPath=""
+    
+     If Project.Variables.VariableExists("gXMLResultPath") then
+      Project.Variables.RemoveVariable("gXMLResultPath")
+    End If
+    Project.Variables.AddVariable "gXMLResultPath","String"
+    Project.Variables.gXMLResultPath=""
+    
+    If Project.Variables.VariableExists("gOverallResult") then
+      Project.Variables.RemoveVariable("gOverallResult")
+    End If
+    Project.Variables.AddVariable "gOverallResult","String"
+    Project.Variables.gOverallResult=""
+    
+    If Project.Variables.VariableExists("gScreenshotType") then
+      Project.Variables.RemoveVariable("gScreenshotType")
+    End If
+    Project.Variables.AddVariable "gScreenshotType","String"
+    Project.Variables.gScreenshotType=""
+    If Project.Variables.VariableExists("gScreenshotPath") then
+      Project.Variables.RemoveVariable("gScreenshotPath")
+    End If
+    Project.Variables.AddVariable "gScreenshotPath","String"
+    Project.Variables.gScreenshotPath=""
+    
+    If Project.Variables.VariableExists("gTestCaseId") then
+      Project.Variables.RemoveVariable("gTestCaseId")
+    End If
+    Project.Variables.AddVariable "gTestCaseId","String"
+    Project.Variables.gTestCaseId=""
+    
+    If Project.Variables.VariableExists("gTestCaseName") then
+      Project.Variables.RemoveVariable("gTestCaseName")
+    End If
+    Project.Variables.AddVariable "gTestCaseName","String"
+    Project.Variables.gTestCaseName=""
+    
+    If Project.Variables.VariableExists("gTestCaseStatus") then
+      Project.Variables.RemoveVariable("gTestCaseStatus")
+    End If
+    Project.Variables.AddVariable "gTestCaseStatus","String"
+    Project.Variables.gTestCaseStatus=""
+    
+    If Project.Variables.VariableExists("gTestDataFile") then
+      Project.Variables.RemoveVariable("gTestDataFile")
+    End If
+    Project.Variables.AddVariable "gTestDataFile","String"
+    Project.Variables.gTestDataFile=""
+    
+    If Project.Variables.VariableExists("gGetObjPropValue") then
+      Project.Variables.RemoveVariable("gGetObjPropValue")
+    End If
+    Project.Variables.AddVariable "gGetObjPropValue","String"
+     Project.Variables.gGetObjPropValue=""
+     
+    If Project.Variables.VariableExists("gTestName") then
+      Project.Variables.RemoveVariable("gTestName")
+    End If
+    Project.Variables.AddVariable "gTestName","String"
+    Project.Variables.gTestName=""
+     
+    If Project.Variables.VariableExists("gTestEnvironment") then
+      Project.Variables.RemoveVariable("gTestEnvironment")
+    End If
+    Project.Variables.AddVariable "gTestEnvironment","String"
+    Project.Variables.gTestEnvironment=""
+    
+    If Project.Variables.VariableExists("gResultsFolder") then
+      Project.Variables.RemoveVariable("gResultsFolder")
+    End If
+    Project.Variables.AddVariable "gResultsFolder","String"
+    Project.Variables.gResultsFolder=""
+ 
+    If Project.Variables.VariableExists("gDictionaryObject") then
+      Project.Variables.RemoveVariable("gDictionaryObject")
+    End If
+    Project.Variables.AddVariable "gDictionaryObject","Object"
+    Project.Variables.gDictionaryObject=CreateObject("Scripting.Dictionary")
+  
+    If Project.Variables.VariableExists("gTestDataDict") then
+      Project.Variables.RemoveVariable("gTestDataDict")
+    End If
+    Project.Variables.AddVariable "gTestDataDict","Object"
+    Project.Variables.gTestDataDict=CreateObject("Scripting.Dictionary")
+    
+    If Project.Variables.VariableExists("gConfigVarDict") then
+      Project.Variables.RemoveVariable("gConfigVarDict")
+    End If
+    Project.Variables.AddVariable "gConfigVarDict","Object"
+    Project.Variables.gConfigVarDict=CreateObject("Scripting.Dictionary")
+    
+    If Project.Variables.VariableExists("gStopTest") then
+      Project.Variables.RemoveVariable("gStopTest")
+    End If
+    Project.Variables.AddVariable "gStopTest","boolean"
+    Project.Variables.gStopTest=False
+    Err.Clear
+    FnVariableDeclaration=True
+End Function
+
+
+'*****************************************************************************************************************************
+'Function Name : FnGetsConfigVariables(sXmlFilePath)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetsConfigVariables(sXmlFilePath)
+  On Error Resume Next
+  Err.Clear
+  FnGetEnvVariable=False
+  
+  Project.Variables.gConfigVarDict.RemoveAll
+  
+  Set Doc=Sys.OleObject("Msxml2.DOMDocument.6.0")
+  Doc.async=False
+  Err.Clear
+  
+  Call Doc.Load(sXmlFilePath)
+  
+  Set sNode=Doc.documentElement
+  Set aElements=sNode.childNodes
+  
+  For iLoop = 0 to aElements.length - 1
+    Set sEnvNode=aElements.item(iLoop)
+    sVariableName=sEnvNode.NodeName
+    sVariableValue=Trim(sEnvNode.NodeTypedValue)
+    If Project.Variables.gConfigVarDict.Exists(trim(Ucase(sVariableName))) then
+        Project.Variables.gConfigVarDict.Remove(trim(Ucase(sVariableName)))
+    End if
+    Project.Variables.gConfigVarDict.Add trim(Ucase(sVariableName)),Trim(sVariableValue)      
+  Next    
+  If Err.Description<> "" then
+    Log.Message "FnGetEnvVariable function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Exit Function
+  End If
+  FnGetEnvVariable=True
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnGetXMLTestData
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetXMLTestData()
+  On Error Resume Next
+  Err.Clear
+  FnGetXMLTestData=False
+  sTestDataFilePath=Project.Variables.gTestDataFile
+  sTesCaseID=Project.Variables.gTestCaseId
+  Project.Variables.gTestDataDict.RemoveAll
+  
+  Set Doc=Sys.OleObject("Msxml2.DOMDocument.6.0")
+  Doc.async=False
+  Err.Clear
+  
+  Call Doc.Load(sTestDataFilePath)   'sXmlFilePath
+  
+  Set sNode=Doc.documentElement
+  Set aElements=sNode.childNodes
+  For iLoop = 0 to aElements.length - 1
+    Set sTestNode=aElements.item(iLoop)
+    sTestNodeName=sTestNode.NodeName
+    
+    If Trim(Ucase(sTestNodeName))=Trim(Ucase(sTesCaseID)) then
+      Set sChileNodes=sTestNode.childNodes
+        For jLoop = 0 to sChileNodes.length - 1
+            Set sChildNode=sChileNodes.item(jLoop)
+            sChildNodeName=sChildNode.NodeName
+            sTestValue=Trim(sChildNode.NodeTypedValue)
+            
+            If Project.Variables.gTestDataDict.Exists(trim(Ucase(sChildNodeName))) then
+                Project.Variables.gTestDataDict.Remove(trim(Ucase(sChildNodeName)))
+            End if
+            Project.Variables.gTestDataDict.Add trim(Ucase(sChildNodeName)),Trim(sTestValue)
+        Next
+        Exit For
+    End If
+  Next    
+  If Err.Description<> "" then
+    Log.Message "FnGetXMLTestData function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Exit Function
+  End If
+  FnGetXMLTestData=True
+End Function
+
+
+'*****************************************************************************************************************************
+'Function Name : FnSendResultEmail
+'Author : G10X
+'*****************************************************************************************************************************
+'Function Send_Email_using_Outlook(mFrom, mTo, mSubject, mBody,   mAttachment)
+Sub Test1
+  mFrom="renjini_balakrishnan@jltgroup.com"
+  mTo="renjini_balakrishnan@jltgroup.com"
+  mSubject="TestMail"
+  mBody="Testing"
+  mAttachment=""
+  Dim i, schema, mConfig, mMessage
+  Err.Clear
+  On Error Resume Next
+  schema = "http://schemas.microsoft.com/cdo/configuration/ <http://schemas.microsoft.com/cdo/configuration/> "
+  Set mConfig = Sys.OleObject("CDO.Configuration")
+  mConfig.Fields.Item(schema + "sendusing") = 2 ' cdoSendUsingPort
+  mConfig.Fields.Item(schema + "smtpserver") = "smtp-mail.outlook.com" ' SMTP server
+  mConfig.Fields.Item(schema + "smtpserverport") = 25  ' Port number
+  mConfig.Fields.Update 
+  Set mMessage = Sys.OleObject("CDO.Message") 
+  mMessage.Configuration = mConfig 
+  mMessage.From = mFrom 
+  mMessage.To = mTo 
+  mMessage.Subject = mSubject 
+  mMessage.HTMLBody = mBody 
+  aqString.ListSeparator = "," 
+  For i = 0 To aqString.GetListLength(mAttachment) - 1 
+    mMessage.AddAttachment aqString.GetListItem(mAttachment, i) 
+  Next 
+  mMessage.Send 
+  If Err.Number > 0 Then 
+    Log.Error "E-mail cannot be sent", Err.Description 
+    SendEMail = False 
+  Else 
+    Log.Message "Message to <" + mTo + "> was successfully sent" 
+    SendEMail = True 
+  End If 
+'End Function
+end sub
+
+
+
+
+'Function FnSendResultEmail(emailFrom,emailTo,emailSubject,emailCC,emailBody,emailFormat,strResultFile)
+sub a
+  On Error Resume Next
+  Err.Clear
+  FnSendResultEmail=False
+ 
+  cdoSendUsingMethod="http://schemas.microsoft.com/cdo/configuration/sendusing"
+  cdoSMTPServer="http://schemas.microsoft.com/cdo/configuration/smtpserver"
+  cdoSMTPServerPort="http://schemas.microsoft.com/cdo/configuration/smtpserverport"
+  
+  
+  Set cdoConfig=CreateObject("CDO.Configuration")
+  With cdoConfig.Fields
+    .Item(cdoSendUsingMethod)=2
+    .Item(cdoSMTPServerPort)=25    
+    .Item(cdoSMTPServer)="mta-hub.ms.com"
+    .Update
+  End with
+  'Set msg= CreateObject("CDO.Message")
+  Set msg = Sys.OleObject("CDO.Message")
+  Set msg.Configuration=cdoConfig
+  msg.From="renjini_balakrishnan@jltgroup.com"
+  msg.To="renjini_balakrishnan@jltgroup.com"
+  msg.Subject="Hello"
+  'msg.CC=""
+  'msg.AddAttachment(strResultFile)
+  msg.TextBody="Test"
+  msg.send
+'  if Err.number=-2147220977 then
+'    sendFlag=False
+'    Err.Clear
+'    arr
+  
+  
+  
+  '16           PwpEmailServer               email.trv.ust-global.com               1 
+'Port :25
+
+  If Err.Description<> "" then
+    Log.Message "FnSendResultEmail function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    'Exit Function
+  End If
+  
+  'Project.Variables.gTestCaseStatus="PASSED"
+  FnSendResultEmail=True
+
+'End Function
+end sub
+Function SendEmail(mFrom, mTo, mSubject, mBody, mAttachment)
+  Dim i, schema, mConfig, mMessage
+
+  Err.Clear
+  On Error Resume Next
+
+  schema = "http://schemas.microsoft.com/cdo/configuration/"
+  Set mConfig = Sys.OleObject("CDO.Configuration")
+  mConfig.Fields.Item(schema + "sendusing") = 16 ' cdoSendUsingPort
+  mConfig.Fields.Item(schema + "smtpserver") = "PwpEmailServer" ' SMTP server
+  mConfig.Fields.Item(schema + "smtpserverport") = 25 ' Port number
+
+  ' If you use Gmail --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp.gmail.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 25
+
+  ' If you use Outlook --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp-mail.outlook.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 25
+
+  ' If you use Office365 --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp.office365.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 587
+
+  mConfig.Fields.Item(schema + "smtpauthenticate") = 1 ' Authentication mechanism
+  ' mConfig.Fields.Item(schema + "sendusername") = "" ' User name (if needed)
+  ' mConfig.Fields.Item(schema + "sendpassword") = "" ' User password (if needed)
+  mConfig.Fields.Update
+
+  Set mMessage = Sys.OleObject("CDO.Message")
+  mMessage.Configuration = mConfig
+  mMessage.From = mFrom
+  mMessage.To = mTo
+  mMessage.Subject = mSubject
+  mMessage.HTMLBody = mBody
+
+  aqString.ListSeparator = ","
+  For i = 0 To aqString.GetListLength(mAttachment) - 1 
+    mMessage.AddAttachment aqString.GetListItem(mAttachment, i)
+  Next
+
+  mMessage.Send
+
+  If Err.Number > 0 Then
+    Log.Error "Email cannot be sent", Err.Description
+    SendEMail = False
+  Else
+    Log.Message "Message to <" + mTo + "> was successfully sent"
+    SendEMail = True
+  End If
+End Function
+
+Sub MainTest
+  If SendEmail("tester@mycompany.com", "boss@mycompany.com", "Subject", _
+             "Message body", "c:\File1.txt,c:\File2.txt,c:\File3.txt") Then
+    ' Message was sent
+  Else
+    ' Message was not sent
+  End If
+End Sub
+
+sub aaa
+call SendEmail("renjini_balakrishnan@jltgroup.com", "renjini_balakrishnan@jltgroup.com", "Hello", "Hello", "")
+
+End sub
+
+
+Function SendTestEmail(mFrom, mTo, mSubject, mBody, mAttachment)
+  Dim i, schema, mConfig, mMessage
+
+  Err.Clear
+  On Error Resume Next
+
+  schema = "http://schemas.microsoft.com/cdo/configuration/"
+  Set mConfig = Sys.OleObject("CDO.Configuration")
+  mConfig.Fields.Item(schema + "sendusing") = 2 ' cdoSendUsingPort
+  mConfig.Fields.Item(schema + "smtpserver") = "ServerName" ' SMTP server
+  mConfig.Fields.Item(schema + "smtpserverport") = 25 ' Port number
+
+  ' If you use Gmail --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp.gmail.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 25
+
+  ' If you use Outlook --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp-mail.outlook.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 25
+
+  ' If you use Office365 --
+  ' mConfig.Fields.Item(schema + "smtpserver") = "smtp.office365.com"
+  ' mConfig.Fields.Item(schema + "smtpserverport") = 587
+
+  mConfig.Fields.Item(schema + "smtpauthenticate") = 1 ' Authentication mechanism
+  ' mConfig.Fields.Item(schema + "sendusername") = "" ' User name (if needed)
+  ' mConfig.Fields.Item(schema + "sendpassword") = "" ' User password (if needed)
+  mConfig.Fields.Update
+
+  Set mMessage = Sys.OleObject("CDO.Message")
+  mMessage.Configuration = mConfig
+  mMessage.From = mFrom
+  mMessage.To = mTo
+  mMessage.Subject = mSubject
+  'mMessage.HTMLBody = mBody
+  mMessage.TextBody=mBody
+
+ ' aqString.ListSeparator = ","
+ ' For i = 0 To aqString.GetListLength(mAttachment) - 1 
+ '   mMessage.AddAttachment aqString.GetListItem(mAttachment, i)
+ ' Next
+
+  mMessage.Send
+
+  If Err.Number > 0 Then
+    Log.Error "Email cannot be sent", Err.Description
+    SendEMail = False
+  Else
+    Log.Message "Message to <" + mTo + "> was successfully sent"
+    SendEMail = True
+  End If
+End Function
+
+Function setProjectVariables
+  Call FnGetXMLTestData()
+  Call FnReadExcel_URLs
+  Call FnReadExcel_Credentials
+  Call FnReadExcel_SAP_codes
+  Call FnReadExcel_iServe_products
+  Call FnReadExcel_iServe_payment
+  Call FnReadExcel_iServe_user  
+End Function
+
+Function FnReadExcel_URLs
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [URLs$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("System")))
+          Case "wms_D100"  
+            wms_url_D100=Trim(objRecordSet.Fields("URLs"))
+          Case "wms_D500"  
+            wms_url_D500=Trim(objRecordSet.Fields("URLs"))
+          Case "iserve"  
+            iserve_url=Trim(objRecordSet.Fields("URLs"))
+          Case "metapack"  
+            metaPack_url=Trim(objRecordSet.Fields("URLs"))       
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :" +status)
+            Exit Function
+        End Select
+        
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+
+End Function
+Function FnReadExcel_Credentials
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [Credentials$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("System")))
+          Case "SAP"  
+            sap_username=Trim(objRecordSet.Fields("username"))
+            sap_password=Trim(objRecordSet.Fields("password"))
+          Case "D500"  
+            wms_username_D500=Trim(objRecordSet.Fields("username"))
+            wms_password_D500=Trim(objRecordSet.Fields("password"))
+          Case "D100"  
+            wms_username=Trim(objRecordSet.Fields("username"))
+            wms_password=Trim(objRecordSet.Fields("password"))
+          Case "iServe_lvl40"  
+            iserve_userid_lvl40=Trim(objRecordSet.Fields("username"))
+            iserve_password_lvl40=Trim(objRecordSet.Fields("password"))
+          Case "LanDesk"  
+            landesk_username=Trim(objRecordSet.Fields("username"))
+            landesk_password=Trim(objRecordSet.Fields("password"))
+            landesk_domain=Trim(objRecordSet.Fields("domain")) 
+          Case "Metapack"  
+            metaPack_un=Trim(objRecordSet.Fields("username"))
+            metaPack_pwd=Trim(objRecordSet.Fields("password"))
+                  
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :" +status)
+            Exit Function
+        End Select
+        
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+
+End Function
+Function FnReadExcel_SAP_codes
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [tcode$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("Desc")))
+          Case "displaySalesOrder"  
+            tcode_displaySalesOrder=Trim(objRecordSet.Fields("t_Code"))
+          Case "iDocSearch"  
+            tcode_iDocSearch=Trim(objRecordSet.Fields("t_Code"))
+          Case "Program"  
+            tcode_Program=Trim(objRecordSet.Fields("t_Code"))
+          Case "Gen_Tab_Dis"  
+            tcode_Gen_Table_Dis=Trim(objRecordSet.Fields("t_Code"))
+          Case "ChangeArticle"  
+            tcode_ChangeArticle=Trim(objRecordSet.Fields("t_Code"))
+          Case "CreateSalesOrder"  
+            tcode_Createsalesorder=Trim(objRecordSet.Fields("t_Code"))         
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :" +status)
+            Exit Function
+        End Select   
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+End Function
+
+Function FnReadExcel_iServe_products
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [iserveProduct$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("Desc")))
+          Case "NormalItem1"  
+            NormalItem1=Trim(objRecordSet.Fields("ProductId"))
+          Case "NormalItem2"  
+            NormalItem2=Trim(objRecordSet.Fields("ProductId"))
+          Case "NormalItem3"  
+            NormalItem3=Trim(objRecordSet.Fields("ProductId"))
+          Case "bikeItem"  
+            bikeItem=Trim(objRecordSet.Fields("ProductId"))
+          Case "agerestricteditem"
+            agerestricteditem=Trim(objRecordSet.Fields("ProductId"))
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :")
+            Exit Function
+        End Select   
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+End Function
+
+Function FnReadExcel_iServe_payment
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [iservePayment$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("Type")))
+          Case "Coupon"  
+            Coupon=Trim(objRecordSet.Fields("Number"))
+          Case "GiftCard"  
+            GiftCard=Trim(objRecordSet.Fields("Number"))
+          Case "TradeCard"  
+            TradeCard=Trim(objRecordSet.Fields("Number"))
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :")
+            Exit Function
+        End Select   
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+End Function
+Function FnReadExcel_iServe_user
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [iserveUser$];" 'WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        While objRecordSet.EOF = False
+        Select Case Trim(Trim(objRecordSet.Fields("Type")))
+          Case "ExistingUser1"  
+            ExistingUser1=Trim(objRecordSet.Fields("EmailId"))
+          Case Else
+            Log.Warning("FnPerformAction invalid case value :")
+            Exit Function
+        End Select   
+    objRecordSet.moveNext
+    Counter=Counter+1
+  Wend
+  End If      
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+End Function
+'*******************************************
+'''
+'''Sub MainTest
+'''  If SendEmail("tester@mycompany.com", "boss@mycompany.com", "Subject", _
+'''             "Message body", "c:\File1.txt,c:\File2.txt,c:\File3.txt") Then
+'''    ' Message was sent
+'''  Else
+'''    ' Message was not sent
+'''  End If
+'''End Sub
+

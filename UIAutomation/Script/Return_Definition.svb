@@ -1,0 +1,179 @@
+﻿'USEUNIT CommonHelper
+'USEUNIT ObjectHelper
+'USEUNIT UserActions
+'USEUNIT ConfigSetup
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+'USEUNIT SAP_UserActions
+'USEUNIT WMS_UserActions
+'USEUNIT Variables
+'USEUNIT UserActions
+
+
+' [Given the user logs in to the SAP Application]
+Sub the_user_logs_in_to_the_SAP_Application()
+  Call FnSAP_Login("HAL03611","Winter03")
+End Sub
+
+' [Given the user navigates to the {arg} transaction]
+Sub the_user_navigates_to_the_transaction(param1)
+  Call FnSAP_Transaction(param1)
+End Sub
+
+' [When the user searches for {arg} order placed against {arg} using {arg}]
+Sub the_user_searches_for_order_placed_against_using_(param1, param2, param3)
+  Call FnPerformAction("Enter Order number", "Order","","Click")
+  Call FnPerformAction("Enter tCode", "Order","2200345968","KEYS")
+  WshShell.SendKeys "{ENTER}"
+  Call ExplicitDelay(2000)
+End Sub
+
+' [Then the order details are displayed]
+Sub the_order_details_are_displayed()
+  
+End Sub
+
+' [Then the item category is displayed Item Overview tab]
+Sub the_item_category_is_displayed_Item_Overview_tab()
+  Call FnPerformAction("Itemoverview", "Itemoverview","","Click")
+  Call ExplicitDelay(5000) 
+End Sub
+
+' [Then the payment method and amount are displayed on Additional Data tab]
+Sub the_payment_method_and_amount_are_displayed_on_Additional_Data_tab()
+  Call FnPerformAction("Ecom order details", "Ecom_Order","","DBLCLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "AdditionalDataA","","CLICK")
+  Call FnPerformAction("Ecom order details", "AdditionalDataB","","CLICK")
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Ecom order details", "Amount","","CLICK")
+  Call FnVerifyAccountinfo_Price("140.00")  
+  Call FnVerifyAccountinfo_status("2")
+End Sub
+
+' [Then the delivery number and DC are displayed on Purchase Order History Tab]
+Sub the_delivery_number_and_DC_are_displayed_on_Purchase_Order_History_Tab()
+  Call FnPerformAction("Ecom order details", "BackBtn","","CLICK") 
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("PO number", "PONum","","CLICK") 
+  Call ExplicitDelay(2000)
+  Call FnPerformAction("Display document flow", "DisplayDocFlow","","CLICK") 
+  Call FnGetdeliveryNum_OC
+End Sub
+
+' [Then the user logs into WMS as {arg}]
+Sub the_user_logs_into_WMS_as_(param1)
+  Call FnWMS_Login("HAL03611","3611")
+End Sub
+
+' [Then the user completes the WMS transaction using the delivery number]
+Sub the_user_completes_the_WMS_transaction_using_the_delivery_number()
+  Call FnWMS_PickTicketInqury(deliverynum)
+  Call FnWMS_RunEcomWave
+  Call FnWMS_Invoicing
+End Sub
+
+' [Given the user runs the batch job {arg} in SAP]
+Sub the_user_runs_the_batch_job_in_SAP(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then the job should run successfully]
+Sub the_job_should_run_successfully()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Given the idoc  <{arg}> is generated successfully]
+Sub the_idoc____is_generated_successfully(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Given the user logs in to the iServe as {arg}]
+Sub the_user_logs_in_to_the_iServe_as_(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user completes the Order Pickup Enquiry]
+Sub the_user_completes_the_Order_Pickup_Enquiry()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user validates delivery number]
+Sub the_user_validates_delivery_number()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user completes Order collection]
+Sub the_user_completes_Order_collection()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user logs in to the SAP Application]
+Sub the_user_logs_in_to_the_SAP_Application_2()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user navigates to the {arg} transaction]
+Sub the_user_navigates_to_the_transaction_2(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the Order related IDOCs are generated successfully]
+Sub the_Order_related_IDOCs_are_generated_successfully()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user logs in to the iServe as {arg}]
+Sub the_user_logs_in_to_the_iServe_as__2(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user creates a return for the order as  {arg} with {arg} and {arg}]
+Sub the_user_creates_a_return_for_the_order_as_with_and_(param1, param2, param3)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then the order return details are displayed]
+Sub the_order_return_details_are_displayed()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then the accounting of the order is displayed]
+Sub the_accounting_of_the_order_is_displayed()
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then the total order status flow is displayed in the table {arg}]
+Sub the_total_order_status_flow_is_displayed_in_the_table_(param1)
+  'Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Given the user runs the jobin SAP]
+Sub the_user_runs_the_jobin_SAP()
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When Search with the order number  and execute and check idoc flow]
+Sub Search_with_the_order_number_and_execute_and_check_idoc_flow()
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user completes Order collection-Check status]
+Sub the_user_completes_Order_collection_Check_status()
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [When the user creates a full return for the order as  {arg} with {arg} and {arg}]
+Sub the_user_creates_a_full_return_for_the_order_as_with_and_(param1, param2, param3)
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then the user navigates to the {arg} transaction and check IDOC list]
+Sub the_user_navigates_to_the_transaction_and_check_IDOC_list(param1)
+  Err.Raise 35 	 ' Not implemented
+End Sub
+
+' [Then check all the accounting for Order raised and Order return]
+Sub check_all_the_accounting_for_Order_raised_and_Order_return()
+  Err.Raise 35 	 ' Not implemented
+End Sub

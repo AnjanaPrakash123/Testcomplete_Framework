@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{E7ABA87F-E873-4452-9921-6F4BAAEB2BCC}" version="1400" key="{86F41BA7-9E34-466A-ABDB-208B66C7944B}" typeId="{E7ABA87F-E873-4452-9921-6F4BAAEB2BCC}">
+	<config nodeName="Events" tlbHistory="&quot;TestComplete general events&quot;" />
+	<testData />
+	<data />
+	<children>
+		<child key="{26F7DAD8-DC37-45AF-A9D3-71DE40534870}">
+			<config nodeName="GeneralEvents" lastOpenedTLB="" generatedCLSID="{9CB52636-4350-4C13-A7BF-1ED835E8B0A3}" generatedTLBKey="{78EAEACF-5650-4503-8BDE-A0487DCE2A6B}" generatedEventsKey="{8F4C4FF6-2DED-4EAF-968B-783EF7592FD5}" generatedTLBDesc="TestComplete GeneralEvents Control - 07/10/2021 22:42:29">
+				<eventInfo infoTLBVer="version.dll" infoGUID="{F5856842-4323-49FD-B806-36E22179EF8A}" infoID="1610743808" infoControlName="Test Engine Events" infoEventName="OnStartTest" infoEventRealName="OnStartTest" infoDescription="Occurs when TestComplete starts running a test (whether it is run from the UI or command line, or as a project test item)." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{F5856842-4323-49FD-B806-36E22179EF8A}" infoID="1610743810" infoControlName="Test Engine Events" infoEventName="OnStartTestCase" infoEventRealName="OnStartTestCase" infoDescription="Occurs when TestComplete starts running a test case." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{F5856842-4323-49FD-B806-36E22179EF8A}" infoID="1610743809" infoControlName="Test Engine Events" infoEventName="OnStopTest" infoEventRealName="OnStopTest" infoDescription="Occurs when TestComplete stops running a test or when the execution of a test item is over." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{F5856842-4323-49FD-B806-36E22179EF8A}" infoID="1610743811" infoControlName="Test Engine Events" infoEventName="OnStopTestCase" infoEventRealName="OnStopTestCase" infoDescription="Occurs when TestComplete stops running a test case or when the execution of a test case is over." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743811" infoControlName="General Events" infoEventName="OnLogError" infoEventRealName="OnLogError" infoDescription="Occurs when an error message is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743809" infoControlName="General Events" infoEventName="OnLogMessage" infoEventRealName="OnLogMessage" infoDescription="Occurs when an informative message is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743810" infoControlName="General Events" infoEventName="OnLogWarning" infoEventRealName="OnLogWarning" infoDescription="Occurs when a warning message is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743821" infoControlName="General Events" infoEventName="OnLogCheckpoint" infoEventRealName="OnLogCheckpoint" infoDescription="Occurs when a checkpoint is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743817" infoControlName="General Events" infoEventName="OnLogCloseNode" infoEventRealName="OnLogCloseNode" infoDescription="Occurs when the currently active parent node is closed in the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743816" infoControlName="General Events" infoEventName="OnLogCreateNode" infoEventRealName="OnLogCreateNode" infoDescription="Occurs when a parent node is created in the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743812" infoControlName="General Events" infoEventName="OnLogEvent" infoEventRealName="OnLogEvent" infoDescription="Occurs when an event notification is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743814" infoControlName="General Events" infoEventName="OnLogFile" infoEventRealName="OnLogFile" infoDescription="Occurs when a file is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743815" infoControlName="General Events" infoEventName="OnLogLink" infoEventRealName="OnLogLink" infoDescription="Occurs when a reference to a file is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743813" infoControlName="General Events" infoEventName="OnLogPicture" infoEventRealName="OnLogPicture" infoDescription="Occurs when an image is posted to the test log." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743819" infoControlName="General Events" infoEventName="OnOverlappingWindow" infoEventRealName="OnOverlappingWindow" infoDescription="Occurs when an overlapping window appears." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743820" infoControlName="General Events" infoEventName="OnTimeout" infoEventRealName="OnTimeout" infoDescription="Occurs when a timeout expires in a project or in a project suite." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{4C03E9F2-BB22-4E21-B2E7-E51B754FCBBA}" infoID="1610743818" infoControlName="General Events" infoEventName="OnUnexpectedWindow" infoEventRealName="OnUnexpectedWindow" infoDescription="Occurs when an unexpected window appears." />
+				<eventInfo infoTLBVer="version.dll" infoGUID="{9F037A78-98DE-4B7D-834A-8ACC7B42EC3F}" infoID="1610678272" infoControlName="Flash Events" infoEventName="OnActionScriptException" infoEventRealName="OnActionScriptException" infoDescription="Occurs after the ActionScript exception is raised." />
+				<handlerInfo handlerName="GeneralEvents_OnStopTestCase" handlerMoniker="{BA471397-BD42-46FE-A99F-2C0AE06599D4}GeneralEvents_OnStopTestCase" handlerEventName="OnStopTestCase" handlerRealIID="{F5856842-4323-49FD-B806-36E22179EF8A}" handlerRealDispID="1610743811" />
+				<handlerInfo handlerName="GeneralEvents_OnStartTestCase" handlerMoniker="{BA471397-BD42-46FE-A99F-2C0AE06599D4}GeneralEvents_OnStartTestCase" handlerEventName="OnStartTestCase" handlerRealIID="{F5856842-4323-49FD-B806-36E22179EF8A}" handlerRealDispID="1610743810" />
+				<handlerInfo handlerName="GeneralEvents_OnStopTest" handlerMoniker="{BA471397-BD42-46FE-A99F-2C0AE06599D4}GeneralEvents_OnStopTest" handlerEventName="OnStopTest" handlerRealIID="{F5856842-4323-49FD-B806-36E22179EF8A}" handlerRealDispID="1610743809" />
+				<handlerInfo handlerName="GeneralEvents_OnStartTest" handlerMoniker="{BA471397-BD42-46FE-A99F-2C0AE06599D4}GeneralEvents_OnStartTest" handlerEventName="OnStartTest" handlerRealIID="{F5856842-4323-49FD-B806-36E22179EF8A}" handlerRealDispID="1610743808" />
+			</config>
+			<testData />
+			<data />
+		</child>
+	</children>
+</Root>

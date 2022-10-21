@@ -1,0 +1,280 @@
+﻿
+'USEUNIT ConfigSetup
+'USEUNIT ObjectHelper
+'USEUNIT ReportHelper
+'USEUNIT UserActions
+'USEUNIT EnvironmentVariables
+'USEUNIT Variables
+'*****************************************************************************************************************************
+'Function Name : FnKillExcelProcessbyref gStepDesc)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnKillExcelProcess(byref gStepDesc)
+  On Error Resume Next
+  Err.Clear
+  FnKillExcelProcess=False
+  Set oShell= CreateObject("Wscript.shell")
+  Set oExec=oShell.Exec("taskkill /F /IM EXCEL.EXE")
+  Set oExec=Nothing
+  Set oExec=oShell.Exec("taskkill /F /IM DW20.EXE")
+  Set oExec=Nothing
+  Set oExec=oShell.Exec("taskkill /F /IM LogCollector.EXE")
+  Set oExec=Nothing
+  Set oShell=Nothing
+  Err.Clear
+  If Err.Description<> "" then
+    Log.Message "FnKillExcelProcess function failed due to error : " & Err.Description
+    Call FnWriteReportStep(gStepDesc,"FAILED",Err.Description,"")
+  Else
+    FnKillExcelProcess=True
+     Call FnWriteReportStep(gStepDesc,"PASSED","","")
+  End If
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : fnKillProcess(byref gStepDesc,strProcessToKill)
+'Author : G10X
+'*****************************************************************************************************************************
+Function fnKillProcess(byref gStepDesc,strProcessToKill)
+    On Error Resume Next
+    Err.Clear
+    
+    strComputer = sys.HostName
+    Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+    Set colProcess = objWMIService.ExecQuery("Select * from Win32_Process Where Name = '" & strProcessToKill & "'")
+    count = 0
+    For Each objProcess in colProcess
+    	objProcess.Terminate()
+    	count = count + 1
+    Next 
+    If Err.Description<> "" then
+        Log.Message "fnKillProcess Failed."
+         Call FnWriteReportStep(gStepDesc,"FAILED",Err.Description,"")
+    End If
+    Call FnWriteReportStep(gStepDesc,"PASSED","","")
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : ExplicitDelay(Milliseconds)
+'Author : G10X
+'*****************************************************************************************************************************
+Function ExplicitDelay(Milliseconds)
+  On Error Resume Next
+    Err.Clear
+    aqUtils.Delay(Milliseconds)
+  If Err.Description<> "" then
+      Log.Error "ExplicitDelay Failed."
+       Call FnWriteReportStep("ExplicitDelay for " +Milliseconds,"FAILED",Err.Description,"")
+  End If
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnReadExcel_Ordernumber(tablename)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnReadExcel_Ordernumber(OT,PT,iNum)
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [Order$] WHERE Order_type='"&OT&"' AND Status='Available' AND Payment_type='"&PT&"' AND Items='"&iNum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        order_num_temp=Trim(objRecordSet.Fields("Order_number"))
+        Call FnUpdateExcel_OrderStatus("In use",order_num_temp)
+        product_id_temp=Trim(objRecordSet.Fields("Items_code"))
+        If InStr(product_id_temp,",") Then
+           temp_var=Split(product_id_temp,",")
+           product_1=temp_var(0)
+           product_2=temp_var(1)
+        Else
+          product_1=product_id_temp
+        End If
+        product_price_temp=Trim(objRecordSet.Fields("Items_price"))
+        If InStr(product_price_temp,",") Then
+           temp_var=Split(product_price_temp,",")
+           price_1=temp_var(0)
+           price_2=temp_var(1)
+        Else
+          price_1=product_price_temp
+        End If
+        catg_temp=Trim(objRecordSet.Fields("Order_category"))
+        order_total=Trim(objRecordSet.Fields("Order_total"))
+        PaymentType=Trim(objRecordSet.Fields("Payment_type"))
+        product_desc=Trim(objRecordSet.Fields("Product_desc"))
+        Ordertype=Trim(objRecordSet.Fields("Order_type"))
+        customer_name=Trim(objRecordSet.Fields("customer_name"))
+        customer_phone=Trim(objRecordSet.Fields("customer_phone"))
+        customer_email=Trim(objRecordSet.Fields("customer_email"))
+        customer_doornum=Trim(objRecordSet.Fields("customer_doornum"))
+        customer_county=Trim(objRecordSet.Fields("customer_county"))
+        customer_country=Trim(objRecordSet.Fields("customer_country"))
+        customer_postcode=Trim(objRecordSet.Fields("customer_postcode"))
+        'Delivery_Address=(objRecordSet.Fields("Delivery_Address"))
+        
+        Delivery_Method=Trim(objRecordSet.Fields("Delivery_Method"))
+   End If
+
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnUpdateExcel_OrderStatus
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnUpdateExcel_OrderStatus(status,onum)
+  
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "UPDATE [Order$] SET Status='"&status&"' WHERE Order_number='"&onum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+  If Err.Description <> "" then
+        Log.Message(Err.Description)
+        Exit Function
+    End If
+
+ Err.clear
+
+End Function
+
+Function FnUpdateExcel_OrderTestID(Tid,onum)
+  
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "UPDATE [Order$] SET Reference_test_id='"&Tid&"' WHERE Order_number='"&onum&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+  If Err.Description <> "" then
+        Log.Message(Err.Description)
+        Exit Function
+    End If
+
+ Err.clear
+
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnReadExcel_Ordernumber_PostInvoice
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnReadExcel_Ordernumber_PostInvoice(tid,status,OT)
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [Order$] WHERE Reference_test_id='"&tid&"' AND Status='"&status&"' AND Order_type='"&OT&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.RecordCount
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if RecordCount > 0 Then
+  
+        
+        order_num_temp=CStr(Trim(objRecordSet.Fields("Order_number")))
+        'Call FnUpdateExcel_OrderStatus("In use",order_num_temp)
+        product_id_temp=Trim(objRecordSet.Fields("Items_code"))
+        If InStr(product_id_temp,",") Then
+           temp_var=Split(product_id_temp,",")
+           product_1=temp_var(0)
+           product_2=temp_var(1)
+        Else
+          product_1=product_id_temp
+        End If
+        product_price_temp=Trim(objRecordSet.Fields("Items_price"))
+        If InStr(product_price_temp,",") Then
+           temp_var=Split(product_price_temp,",")
+           price_1=temp_var(0)
+           price_2=temp_var(1)
+        Else
+          price_1=product_price_temp
+        End If
+        catg_temp=Trim(objRecordSet.Fields("Order_category"))
+        order_total=Trim(objRecordSet.Fields("Order_total"))
+        PaymentType=Trim(objRecordSet.Fields("Payment_type"))
+        product_desc=Trim(objRecordSet.Fields("Product_desc"))
+        Ordertype=Trim(objRecordSet.Fields("Order_type"))
+        
+   Else
+    Log.Error("No order found")     
+   End If
+
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnReadExcel_Ordernumber(tablename)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnReadExcel_HazardTestCaseData(Tid)
+  
+  Set objCon = CreateObject("ADODB.Connection")
+  Set objRecordSet = CreateObject("ADODB.Recordset")
+  objRecordSet.CursorLocation = 3
+  objRecordSet.CursorType =3
+  strExlFile = Project.Path&"Files\Order_details.xlsx"
+  objCon.Open "DRIVER={Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)};DBQ=" &strExlFile & ";Readonly=True"
+  strSQLStatement = "SELECT * FROM [HAZ$] WHERE Test_id='"&Tid&"';"
+  objRecordSet.Open strSQLStatement, objCon 'create recordset
+  RecordCount = objRecordSet.Fields.count
+  'Log.Message("Record Count "&RecordCount)  
+  Counter=1
+  if objRecordSet.RecordCount > 0 Then
+        Haz_prodcode=Trim(objRecordSet.Fields("Product_id"))
+        Hcode=Trim(objRecordSet.Fields("Hcode"))
+        H_Pcode=Trim(objRecordSet.Fields("Pcode"))
+        H_Signal_word=Trim(objRecordSet.Fields("Signal_Word"))
+        H_Statement=Trim(objRecordSet.Fields("H_Statement"))
+   End If
+
+  Set objRecordSet = Nothing
+  objCon.Close
+  Set objCon = Nothing
+  
+End Function
+Function FnSet_DeliverAddress
+
+  temp_address=Split(Delivery_Address,"<br>")
+  customer_name_temp=Split(temp_address(0),".")
+  customer_name=customer_name_temp(1)
+  customer_add_line_1=temp_address(1)
+  customer_add_line_2=temp_address(2)
+  customer_phone=temp_address(3)
+  customer_email=temp_address(4)
+  customer_add_line_1_temp=Split(customer_add_line_1,",")
+  customer_doornum=customer_add_line_1_temp(0)
+  customer_county=customer_add_line_1_temp(1)
+  customer_add_line_2_temp=Split(customer_add_line_2,",")
+  customer_country=customer_add_line_2_temp(0)
+  customer_postcode=customer_add_line_2_temp(1)
+  
+End Function

@@ -1,0 +1,444 @@
+﻿
+'USEUNIT ConfigSetup
+'USEUNIT EnvironmentVariables
+
+'*****************************************************************************************************************************
+'Function Name : FnWriteReportStep(byref gStepDesc,byref gStepStatus)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnWriteReportStep(StepDesc,StepStatus, StepError,StepValidationMsg)
+    On Error Resume Next
+    Err.Clear
+    
+    FnWriteReportStep=False
+'    Take screenshot
+    if Ucase(Trim(StepStatus))= "FAILED" then
+      Project.Variables.gOverallResult="FAILED"
+      Project.Variables.gTestCaseStatus="FAILED"
+    end if
+    call FnCaptureScreen(StepStatus)
+    ScreenshotPath=Project.Variables.gScreenshotPath
+  
+    TCID= Project.Variables.gTestCaseId
+    Dim objXML
+    strFilePath = Project.Variables.gXMLResultPath
+    set objXML = createObject("MSXML2.DomDocument")  
+    objXML.load strFilePath  
+    objXML.async = false  
+    With objXML.parseError  
+      If .errorCode = 0 then  
+          objXML.setProperty "SelectionLanguage", "XPath"  
+          strXPath="//Testcase[@id='"+ TCID + "']/Steps"
+          set StepsNode = objXML.selectSingleNode(strXPath)  
+          set objRoot = objXML.DocumentElement  
+          Set StepNode = objXML.createElement("Step")  
+          Set StepNameNode = objXML.createElement("StepName")  
+          Set StepStatusNode = objXML.createElement("StepStatus")  
+  
+          Set ScreenshotNode = objXML.createElement("ScreenshotPath")  
+          Set ErrorNode = objXML.createElement("Error")  
+          Set StepMessageNode = objXML.createElement("AdditionalInfo")  
+    
+          StepNameNode.text = StepDesc  
+          StepStatusNode.text = StepStatus  
+          StepMessageNode.text=StepValidationMsg
+          ScreenshotNode.text = ScreenshotPath  
+          ErrorNode.text = StepError  
+
+    
+          StepNode.appendChild StepNameNode  
+          StepNode.appendChild StepStatusNode  
+     
+          StepNode.appendChild ScreenshotNode  
+          StepNode.appendChild ErrorNode  
+          StepNode.appendChild StepMessageNode
+          
+          StepsNode.appendChild StepNode  
+          objXML.save strFilePath  
+      Else  
+           Log.Warning "Could not parse the XML file!!!" & vbCrLf &_  
+                  "Error code: " & .errorCode & vbCrLf &_  
+                  "Line: " & .line & vbCrLf &_  
+                  "Reason: " & .reason & vbCrLf &_  
+                  "File Path: " & .url  
+      End If  
+ End With  
+ set objXML = Nothing  
+    If Err.Description <> "" then
+      Log.Warning "FnWriteReportStep function failed due to error : " & Err.Description
+      Exit Function
+    End IF
+    FnWriteReportStep=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : WriteReportTestcase_Start(byref gTCName,byref TCStartTime )
+'Author : G10X
+'*****************************************************************************************************************************
+Function WriteReportTestcase_Start(TestName)
+    On Error Resume Next
+    Err.Clear
+    WriteReportTestcase_Start=False
+    Dim objXML
+  
+    Project.Variables.gTestCaseStatus="PASSED"
+    Project.Variables.gStopTest=False
+    Project.Variables.gTestCaseName  =TestName
+    strFilePath = Project.Variables.gXMLResultPath
+    set objXML = createObject("MSXML2.DomDocument")  
+    objXML.load strFilePath  
+    objXML.async = false  
+    With objXML.parseError  
+      If .errorCode = 0 then  
+          objXML.setProperty "SelectionLanguage", "XPath"  
+          strXPath="//TestCaseDetails"
+          set TestCasesNode = objXML.selectSingleNode(strXPath)  
+          set objRoot = objXML.DocumentElement  
+          Set TestCaseNode = objXML.createElement("Testcase")  
+          Set TCNameNode = objXML.createElement("Name")  
+          Set TCStartTimeNode = objXML.createElement("TCStartTime")  
+          Set TCEndTimeNode = objXML.createElement("TCEndTime")  
+          Set TCStatusNode = objXML.createElement("TCStatus")  
+          Set StepsNode = objXML.createElement("Steps")  
+    
+          TCNameNode.text = Project.Variables.gTestCaseName  
+          Call FnGetDateTimeForReport(TCStartTime)
+          TCStartTimeNode.text = TCStartTime  
+          TCID= Project.Variables.gTestCaseId
+          TestCaseNode.setAttribute "id",TCID
+    
+          TestCaseNode.appendChild TCNameNode  
+          TestCaseNode.appendChild TCStartTimeNode  
+          TestCaseNode.appendChild TCEndTimeNode  
+          TestCaseNode.appendChild TCStatusNode  
+          TestCaseNode.appendChild StepsNode  
+          TestCasesNode.appendChild TestCaseNode  
+          objRoot.appendChild TestCasesNode   
+          objXML.save strFilePath  
+      Else  
+           Log.Warning "Could not parse the XML file!!!" & vbCrLf &_  
+                  "Error code: " & .errorCode & vbCrLf &_  
+                  "Line: " & .line & vbCrLf &_  
+                  "Reason: " & .reason & vbCrLf &_  
+                  "File Path: " & .url  
+      End If  
+     End With  
+     set objXML = Nothing  
+    If Err.Description <> "" then
+      Log.Message "WriteReportTestcase_Start function failed due to error : " & Err.Description
+      Exit Function
+    End IF
+    WriteReportTestcase_Start=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name :WriteReportTestcase_End(byref gTCName,byref gTCStatus, byref TCEndTime)
+'Author : G10X
+'*****************************************************************************************************************************
+Function WriteReportTestcase_End()
+    On Error Resume Next
+    Err.Clear
+    WriteReportTestcase_End=False
+    Dim objXML
+    TCID= Project.Variables.gTestCaseId
+    strFilePath = Project.Variables.gXMLResultPath
+    set objXML = createObject("MSXML2.DomDocument")  
+    objXML.load strFilePath  
+    objXML.async = false  
+    With objXML.parseError  
+      If .errorCode = 0 then  
+          objXML.setProperty "SelectionLanguage", "XPath"  
+          strStatusXPath="//Testcase[@id='"+ TCID + "']/TCStatus"
+          set TCStatusNode = objXML.selectSingleNode(strStatusXPath)  
+          TCStatus= Project.Variables.gTestCaseStatus
+          TCStatusNode.text = TCStatus
+          strEndtimeXPath="//Testcase[@id='"+ TCID + "']/TCEndTime"
+          set TCEndTimeNode = objXML.selectSingleNode(strEndtimeXPath)
+          Call FnGetDateTimeForReport(ExeEndTime)  
+          TCEndTimeNode.text = ExeEndTime    
+          objXML.save strFilePath 
+      Else  
+           Log.Warning "Could not parse the XML file!!!" & vbCrLf &_  
+                  "Error code: " & .errorCode & vbCrLf &_  
+                  "Line: " & .line & vbCrLf &_  
+                  "Reason: " & .reason & vbCrLf &_  
+                  "File Path: " & .url  
+      End If  
+     End With  
+     set objXML = Nothing  
+    If Err.Description <> "" then
+      Log.Message "WriteReportTestcase_End function failed due to error : " & Err.Description
+      Exit Function
+    End IF
+    WriteReportTestcase_End=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnWriteReportConfigDetails_Start
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnWriteReportConfigDetails_Start()
+    On Error Resume Next
+    Err.Clear
+    FnWriteReportConfigDetails_Start=False
+    Call FnGetDateTimeForSaving(RepTime)
+      ReportID= "Report_"& RepTime
+      Project.Variables.gScreenshotPath=""
+      gTestEnv= Project.Variables.gTestEnvironment
+      Call FnGetDateTimeForReport(ExeStartTime)
+      ExeSystem=Sys.HostName
+      ExecutedBy=Sys.UserName
+      Call FnCreateResultFolder()
+     
+      
+  
+    
+      
+      sXmlFilePath=Project.Variables.gXMLResultPath
+      Dim objXML, strFilePath, configNode, EnvNode, objRoot, StartTimeNode, EndTimeNode, ExecutedByNode,ExecutedSystemNode,OverallStatusNode, TestCaseDetailsNode
+       
+      set objXML = CreateObject("MSXML2.DomDocument")  
+      Set objRoot = objXML.createElement("TestReport")  
+'      ID with data and time
+      objRoot.setAttribute "id",ReportID
+      objXML.appendchild objRoot  
+       
+      Set configNode = objXML.createElement("ConfigDetails")  
+      Set EnvNode = objXML.createElement("TestEnvironment")  
+      Set StartTimeNode = objXML.createElement("ExecutionStartTime")  
+      Set EndTimeNode = objXML.createElement("ExecutionEndTime")  
+      Set ExecutedByNode = objXML.createElement("ExecutedBy")  
+      Set ExecutedSystemNode = objXML.createElement("ExecutedOn")  
+      Set OverallStatusNode = objXML.createElement("OverallStatus")  
+      Set TestCaseDetailsNode = objXML.createElement("TestCaseDetails")  
+      EnvNode.text = gTestEnv  
+      StartTimeNode.text = ExeStartTime  
+      ExecutedByNode.text = ExecutedBy  
+      ExecutedSystemNode.text = ExeSystem  
+      
+      configNode.appendChild EnvNode  
+      configNode.appendChild StartTimeNode  
+      configNode.appendChild EndTimeNode  
+      configNode.appendChild ExecutedByNode  
+      configNode.appendChild ExecutedSystemNode  
+      configNode.appendChild OverallStatusNode  
+      objRoot.appendChild configNode  
+      objRoot.appendChild TestCaseDetailsNode  
+      Set objIntro = objXML.createProcessingInstruction("xml", "version='1.0'")  
+      objXML.insertBefore objIntro, objXML.documentElement  
+      objXML.save sXmlFilePath  
+      
+      Set objXML = Nothing  
+
+    If Err.Description <> "" then
+      Log.Error "FnWriteReportConfigDetails_Start function failed due to error : " & Err.Description
+      Exit Function
+    End IF
+    FnWriteReportConfigDetails_Start=True
+End Function
+
+
+'*****************************************************************************************************************************
+'Function Name : FnWriteReportConfigDetails_End
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnWriteReportConfigDetails_End()
+    On Error Resume Next
+    Err.Clear
+    FnWriteReportConfigDetails_End=False  
+    Dim objXML,strFilePath,OverallStatusNode
+    strFilePath = Project.Variables.gXMLResultPath
+    set objXML = createObject("MSXML2.DomDocument")  
+    objXML.load strFilePath  
+    objXML.async = false  
+    With objXML.parseError  
+      If .errorCode = 0 then  
+          objXML.setProperty "SelectionLanguage", "XPath"  
+          strStatusXPath="//ConfigDetails/OverallStatus"
+          set OverallStatusNode = objXML.selectSingleNode(strStatusXPath)  
+          OverallStatus= Project.Variables.gOverallResult
+          OverallStatusNode.text = OverallStatus
+          strEndtimeXPath="//ConfigDetails/ExecutionEndTime"
+          set ExeEndTimeNode = objXML.selectSingleNode(strEndtimeXPath)
+          Call FnGetDateTimeForReport(ExeEndTime)  
+          ExeEndTimeNode.text = ExeEndTime    
+          objXML.save strFilePath 
+      Else  
+          Log.Warning "Could not parse the XML file!!!" & vbCrLf &_  
+                "Error code: " & .errorCode & vbCrLf &_  
+                "Line: " & .line & vbCrLf &_  
+                "Reason: " & .reason & vbCrLf &_  
+                "File Path: " & .url  
+      End If  
+ End With  
+ set objXML = Nothing  
+    If Err.Description <> "" then
+      Log.Error "FnWriteReportConfigDetails_End function failed due to error : " & Err.Description
+      Exit Function
+    End IF
+    FnWriteReportConfigDetails_End=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnCreateResultFolder
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnCreateResultFolder()
+    on Error Resume Next
+    Err.Clear
+    FnCreateResultFolder=False
+    Project.Variables.gTestRunResult=""
+    Project.Variables.gXMLResultPath=""
+    Project.Variables.gXMLResultFolder=""
+    Dim Path
+    ' Obtains the path to the current project suite’s file
+    Path = ProjectSuite.Path
+    ' Creates a new folder
+    sTestResultFolder=Path & "ProjectFiles\TestReports"
+    aqFileSystem.CreateFolder(sTestResultFolder)
+    Call FnFolderDate(sText)
+    sReportFolderName=sTestResultFolder& "\Report_" & sText
+    aqFileSystem.CreateFolder(sTestFolderName)
+    Call FnGetDateTimeForSaving(sTime)
+    sTestName=Project.Variables.gTestName
+    sTestFolderName=sReportFolderName& "\Report_" & sTime
+    aqFileSystem.CreateFolder(sTestFolderName)
+    Project.Variables.gXMLResultFolder= sTestFolderName
+    xmlTestFolder= Project.Variables.gXMLResultFolder 
+    sXmlFilePath =xmlTestFolder& "\" & sTestName & "_" & cstr(sTime) & ".xml"
+    Project.Variables.gXMLResultPath=sXmlFilePath
+     
+    If Err.Description<> "" then
+        Log.Error "FnCreateResultFolder Failed due to Error : " & Err.Description
+    End If
+    FnCreateResultFolder=True
+  
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnCaptureScreen
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnCaptureScreen(StepStatus)
+  On Error Resume Next
+  Err.Clear
+  FnCaptureScreen=False
+  TakeScreenshot=False
+  Project.Variables.gScreenshotPath=""
+  If  Ucase(Trim(Project.Variables.gScreenshotType)) <> "NONE"  then
+      If Ucase(Trim(Project.Variables.gScreenshotType)) ="FAILED" then
+        If Ucase(Trim(StepStatus))="FAILED" then
+          TakeScreenshot=True
+        End If
+      Else
+        TakeScreenshot=True
+      End If
+  End if
+  If TakeScreenshot=True then
+      Aqutils.Delay 1000, "Capturing Screenshot."
+      Call FnGetDateTimeForSaving(sTime)
+      sScreenCaptureFolderPath=Project.Variables.gXMLResultFolder & "\Screenshots"
+      aqFileSystem.CreateFolder(sScreenCaptureFolderPath)
+      sScreenCaptureFilePath=sScreenCaptureFolderPath & "\" & Project.Variables.gTestCaseName & "_" & sTime & ".png"
+      Sys.Desktop.Picture.SaveToFile sScreenCaptureFilePath
+  End if
+  If Err.Description <> "" then
+    Log.Warning gStepDesc & " - " & " FnCaptureScreen function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Exit Function
+  End IF
+  Project.Variables.gScreenshotPath=sScreenCaptureFilePath
+  FnCaptureScreen=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnGetDateTimeForSaving
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetDateTimeForSaving(byref sTime)
+  On Error Resume Next
+  Err.Clear
+  FnGetDateTimeForSaving=False
+  If Trim(sTime)="" then
+    sTime=Now
+  End If
+  STime=Replace(sTime,"/","")
+  STime=Replace(sTime,"-","")
+  STime=Replace(sTime,":","")
+  STime=Replace(sTime," ","")
+  
+  If Err.Description<>"" then     
+    Project.Variables.gTestCaseStatus="FAILED"
+    Log.Error"FnGetDateTimeForSaving function failed due to error : " & Err.Description
+    Exit Function
+  End IF
+  FnGetDateTimeForSaving=True 
+
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnGetTimeDiff
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetTimeDiff(byref sTime)
+  On Error Resume Next
+  Err.Clear
+  FnGetTimeDiff=False
+  If Trim(sTime)="" then
+    sTime=Now
+  End If
+  STime=Replace(sTime,"/","")
+  STime=Replace(sTime,"-","")
+  STime=Replace(sTime,":","")
+  STime=Replace(sTime," ","")
+  
+    If Err.Description <> "" then
+        FnFolderDate=False
+        Project.Variables.gTestCaseStatus="FAILED"
+        Log.Error "FnGetDateTime function failed due to error : " & Err.Description 
+        Exit Function
+      End If
+  FnGetTimeDiff=True 
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnFolderDate
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnFolderDate(byref sText)
+    On Error Resume Next
+    Err.Clear
+    FnFolderDate=False
+    iMonth=Month(Date)
+    iDay=Day(Date)
+    iYear=Year(Date)
+    If cint(iDay) >0 and cint(iDay) < 10 then
+      iDay="0" & iDay
+    End if
+
+    If Err.Description <> "" then
+        FnFolderDate=False
+        Project.Variables.gTestCaseStatus="FAILED"
+        Log.Error "FnFolderDate function failed due to error : " & Err.Description
+        Exit Function
+      End If
+    sText=iDay &  Left(MonthName(iMonth),3) & iYear
+    FnFolderDate=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnGetDateTimeForReport
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetDateTimeForReport(byref sTime)
+  On Error Resume Next
+  Err.Clear
+  FnGetDateTimeForReport=False
+  sTime=cstr(Now)
+    
+  If Err.Description<>"" then     
+    Project.Variables.gTestCaseStatus="FAILED"
+    Log.Error"FnGetDateTimeForReport function failed due to error : " & Err.Description
+    Exit Function
+  End IF
+  FnGetDateTimeForReport=True 
+
+End Function

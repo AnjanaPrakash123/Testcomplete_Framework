@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{302E54A8-7D5B-4593-9563-357C2734256B}" version="1400" key="{F2C34414-0690-4593-B140-722CACAEAB23}" typeId="{302E54A8-7D5B-4593-9563-357C2734256B}">
+	<config nodeName="ImageSet3" />
+	<testData />
+	<data>
+		<item caption="Ptkt_Inq" moniker="{0FCB9BB9-8382-452C-AA24-80D17FFC0468}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Ptkt_Inq.png" initialHash="E5B06C34" selectionLeft="0" selectionTop="0" selectionWidth="106" selectionHeight="22" initialLeft="0" initialTop="0" initialWidth="106" initialHeight="22" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+		<item caption="Invoice_Pktkt_2" moniker="{A19043F1-B1F3-4B6E-89CD-5A0ABECDA128}" isComposite="False" simpleMode="True" currentImageIndex="0">
+			<image imageFileName="Data\Invoice_Pktkt_2.png" initialHash="01F5F5BC" selectionLeft="0" selectionTop="0" selectionWidth="105" selectionHeight="23" initialLeft="0" initialTop="0" initialWidth="105" initialHeight="23" pixelTolerance="0" colorTolerance="0" deviceName="" />
+		</item>
+	</data>
+</Root>

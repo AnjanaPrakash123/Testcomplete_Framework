@@ -1,0 +1,101 @@
+﻿
+'USEUNIT WaitProperty
+'USEUNIT Validation
+'USEUNIT TouchActions
+'USEUNIT Variables
+'USEUNIT ReportHelper
+
+' [Given user is on home screen]
+Sub user_is_on_home_screen()
+  On Error Resume Next
+    Err.Clear
+    Set obj=Aliases.Device.processBigbasketMobileapp.TextBigbasket.staticTextBigbasket
+    Call WaitForText(obj,"basket",2000)
+    Call verifyText(obj,"basket","user is on home screen","user is not in home screen")
+    If Err.Description<> "" then
+        Log.Message "Search product Failed."
+         Call FnWriteReportStep("Searched for " +param1,"FAILED",Err.Description,"")
+    End If
+    Call FnWriteReportStep(gStepDesc,"PASSED")
+End Sub
+  
+' [When user Searches for a category {arg}]
+Sub user_Searches_for_a_category__2(param1)
+  On Error Resume Next
+    Err.Clear
+    Set obj=Aliases.Device.processBigbasketMobileapp.button4
+    obj.Touch
+    Call TypeContents(Aliases.Device.processBigbasketMobileapp.SearchBartextField,param1)
+    Call TouchObjects(OneTouch,Aliases.Device.processBigbasketMobileapp.keyMore)
+    Delay(2000)
+    Call TouchObjects(OneTouch,Aliases.Device.processBigbasketMobileapp.buttonSearch2)
+    If Err.Description<> "" then
+      Log.Error "Search product Failed."
+       Call FnWriteReportStep("Searched for " +param1,"FAILED",Err.Description,"")
+    Else
+      Log.Message "Search product Passed."
+       Call FnWriteReportStep("Searched for " +param1,"PASSED","","")
+      
+  End If
+  
+End Sub
+
+' [Then user is on Product listing screen]
+Sub user_is_on_Product_listing_screen()
+ On Error Resume Next
+    Err.Clear
+  Set obj=Aliases.Device.processBigbasketMobileapp.staticTextFilter
+  call verifyText(obj,"Filter","user is on product listing screen","user is not in product listing screen")
+   If Err.Description<> "" then
+      Log.Error "navigation Failed."
+       Call FnWriteReportStep("navigation","FAILED","","")
+    Else
+      Log.Message "Search product Passed."
+       Call FnWriteReportStep("Navigation :","PASSED","","")
+      
+  End If
+End Sub
+
+' [When user clicks on Add button]
+Sub user_clicks_on_Add_button()
+ On Error Resume Next
+    Err.Clear
+  Dim result
+  Set productName=Aliases.Device.processBigbasketMobileapp.other_
+  result=GetFullText(productName)
+  MsgBox result
+  Set obj=Aliases.Device.processBigbasketMobileapp.buttonAdd
+  call TouchObjects(OneTouch,obj)
+   If Err.Description<> "" then
+      Log.Error "Button click Failed."
+       Call FnWriteReportStep("Button click","FAILED","","")
+    Else
+      Log.Message "Click Passed."
+       Call FnWriteReportStep("Click :","PASSED","","")
+      
+  End If
+End Sub
+
+' [Then product is added to basket]
+Sub product_is_added_to_basket()
+ On Error Resume Next
+    Err.Clear
+    Set basketBtn=Aliases.Device.processBigbasketMobileapp.tabBarTabBar.buttonBasket
+    Set startshopping=Aliases.Device.processBigbasketMobileapp.buttonStartShopping
+    call TouchObjects(Onetouch,basketBtn)
+    If startshopping.Exists Then
+      Log.Message("Basket is empty")
+    Else
+     Log.Message("Product added to basket")
+    End If
+    If Err.Description<> "" then
+      Log.Error "Product add Failed."
+       Call FnWriteReportStep("Button click","FAILED","","")
+    Else
+      Log.Message "Product add Passed."
+       Call FnWriteReportStep("Product add:","PASSED","","")
+      
+  End If
+    
+  
+End Sub

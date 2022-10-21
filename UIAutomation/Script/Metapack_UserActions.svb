@@ -1,0 +1,77 @@
+﻿'''''''All Metapack related user actions are listed here in this script''''''''''
+'USEUNIT CommonHelper
+'USEUNIT UserActions
+'USEUNIT Variables
+
+''''Function name: FnMP_Login''''
+''''Description: User function for login''''
+''''Last updated on:26/04//2022- Venukrishnan VR''''
+Function FnMP_Login(username,password)
+  Call fnKillProcess("Kill any open instances of application","chrome.exe")
+  Browsers.Item(btChrome).Run(metaPack_url)
+  Aliases.browser.pageLandeskRemoteControl.formLoginform.textboxUserid.SetText metaPack_un
+  Aliases.browser.pageLandeskRemoteControl.formLoginform.passwordboxPassword.SetText metaPack_pwd
+  Aliases.browser.pageLandeskRemoteControl.formLoginform.submitbuttonLogIn.Click
+End Function
+''''Function name: FnMP_SearchOrder_delvryNum''''
+''''Description: User function for searching order using delivery number''''
+''''Last updated on:26/04//2022- Venukrishnan VR''''
+Function FnMP_SearchOrder_delvryNum(del,ca,ser)
+  If Aliases.browser.pageLandeskRemoteControl.imageCreateConsignment.Exists Then
+    Aliases.browser.pageLandeskRemoteControl.formLoginform.textboxUserid.SetText del
+    Aliases.browser.pageLandeskRemoteControl.selectType.Click
+    Call FnSndKeys("P",1)
+    Call FnSndKeys("{ENTER}",1)
+    Aliases.browser.pageLandeskRemoteControl.formLoginform.submitbuttonLogIn.Click
+    If NameMapping.Sys.browser.pageLandeskRemoteControl.cellTab0button.Exists Then
+      Call FnMP_CheckDeliveryDetails
+      Call FnMP_CheckProductDetails
+      Call FnMP_CheckOptionDetails(ca,ser)
+      Call FnMP_CheckStatusDetails
+    End If
+  End If  
+End Function
+Function FnMP_CheckDeliveryDetails
+  Aliases.browser.pageLandeskRemoteControl.cellTab1button.Click 
+  Call FnMP_checkMessage(customer_name)
+ ' Call FnMP_checkMessage(customer_phone)
+  'Call FnMP_checkMessage(customer_email)
+  Call FnMP_checkMessage(customer_doornum)
+  Call FnMP_checkMessage(customer_county)
+  Call FnMP_checkMessage(customer_country)
+  Call FnMP_checkMessage(customer_postcode)
+End Function
+Function FnMP_CheckProductDetails
+  Aliases.browser.pageLandeskRemoteControl.cellTab7button.Click
+  If Len(product_1) > 0 Then
+    Call FnMP_checkMessage(product_1)
+  End If
+  If Len(product_2) > 0 Then
+    Call FnMP_checkMessage(product_2)
+  End If
+End Function
+Function FnMP_CheckStatusDetails
+  Aliases.browser.pageLandeskRemoteControl.cellTab4button.Click
+End Function
+
+Function FnMP_CheckOptionDetails(carrier,service)
+  
+  Aliases.browser.pageLandeskRemoteControl.cellTab3button.Click
+  Call FnMP_checkMessage(carrier)
+  Call FnMP_checkMessage(service)  
+End Function
+Function FnMP_checkMessage(msg)
+  Msgflag=0
+   alltext=OCR.Recognize(Aliases.browser.pageLandeskRemoteControl).FullText  '.userareaUsr
+   If InStr(alltext,msg) > 0 Then
+      Log.Checkpoint(msg&" found")
+   Else
+      Call FnSndKeys("{PGDN}",1)
+      alltext=OCR.Recognize(Aliases.browser.pageLandeskRemoteControl).FullText
+      If InStr(alltext,msg) > 0 Then
+        Log.Checkpoint(msg&" found")
+      Else
+        Log.Error(msg&" not found")  
+      End If
+   End If 
+End Function

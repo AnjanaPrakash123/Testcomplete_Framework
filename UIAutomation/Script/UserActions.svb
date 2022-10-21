@@ -1,0 +1,440 @@
+﻿'USEUNIT ObjectHelper
+'USEUNIT EnvironmentVariables
+'USEUNIT ReportHelper
+'USEUNIT CommonHelper
+'USEUNIT Variables
+'*****************************************************************************************************************************
+'Function Name : FnPerformAction(byref gStepDesc,sKeyValue,sValue,sAction)
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnPerformAction(byref gStepDesc,sKeyValue,sValue,sAction)
+  On Error Resume Next
+  Err.Clear
+  FnPerformAction=False
+  If Project.Variables.gStopTest=false then
+      If Trim(Ucase(sAction))<> "LAUNCH_APP" then
+        If Not FnGetObject(gStepDesc,sKeyValue,TestObj) then
+            Project.Variables.gTestCaseStatus="FAILED"
+            Call FnWriteReportStep(gStepDesc,"FAILED", "Test Object Not Found.","")
+            Exit Function
+        End If
+      End If
+      sValidationMsg=""
+      Select Case Trim(Ucase(sAction))
+        Case "CLICK"                    'Clicking an item
+            TestObj.Click
+            sValidationMsg="Clicked Successfully"
+        Case "DBLCLICK"                    'Clicking an item
+            TestObj.DblClick
+            sValidationMsg="Clicked Successfully"
+        Case "CLICKITEM"                    'Clicking an item
+            TestObj.ClickItem(sValue)
+            sValidationMsg="Clicked Successfully"
+        Case "CLICKBUTTON"
+            TestObj.ClickButton
+            sValidationMsg="Clicked Successfully"
+        Case "DBLCLICKITEM"                    'Clicking an item
+            TestObj.DblClickItem(sValue)
+            sValidationMsg="Clicked Successfully"
+        Case "EXPANDITEM"               'Expanding an tree item
+            TestObj.ExpandItem(sValue)
+            sValidationMsg=sValue & " Expanded successfully"
+        Case "EXPANDALL"               'Expanding an tree item
+            TestObj.expandtree(sValue)
+            sValidationMsg=sValue & " Expanded successfully"
+        Case "COLLAPSEITEM"             'Collapsing a tree item
+            TestObj.CollapseItem(sValue)
+            sValidationMsg=sValue & " Collapsed successfully"
+        Case "SETTEXT"             'Collapsing a tree item
+            TestObj.SetText(sValue)
+            sValidationMsg=sValue & " entered successfully"
+        Case "KEYS"             'Collapsing a tree item
+            TestObj.Keys(sValue)
+            sValidationMsg=sValue & " typed successfully"
+        Case "SETPARAM"
+            propValue=aqObject.GetPropertyValue(TestObj,"wText")
+            Log.Message(propValue)
+        Case "ISDISPLAYED"
+            boolean_status=false
+            boolean_status= aqObject.CheckProperty(TestObj, "DisplayedText", cmpContains, sValue)
+            propValue=aqObject.GetPropertyValue(TestObj,"DisplayedText")  
+            Log.Message(propValue)  
+        Case Else
+          Log.Warning("FnPerformAction invalid case value :" +sAction)
+          Exit Function
+      End Select
+      If Err.Description <> "" then
+        Log.Warning gStepDesc & " - " & " FnPerformAction function failed due to error : " & Err.Description
+        FnPerformAction=False
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+        Exit Function
+      End If
+      Call FnWriteReportStep(gStepDesc,"PASSED", "",sValidationMsg)
+  End IF
+  FnPerformAction=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnPerformActionWithCoordinates
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnPerformActionWithCoordinates(byref gStepDesc,sKeyValue,xCoordinate, yCoordinate, sValue,sAction)
+  On Error Resume Next
+  Err.Clear
+  FnPerformActionWithCoordinates=False
+  If Project.Variables.gStopTest=false then
+      If Trim(Ucase(sAction))<> "LAUNCH_APP" then
+        If Not FnGetObject(gStepDesc,sKeyValue,TestObj) then
+            Project.Variables.gTestCaseStatus="FAILED"
+            Call FnWriteReportStep(gStepDesc,"FAILED", "Test Object Not Found.","")
+            Exit Function
+        End If
+      End If
+      sValidationMsg=""
+      Select Case Trim(Ucase(sAction))
+        Case "CLICK"                    'Clicking an item
+            TestObj.Click xCordinate,yCordinate
+            sValidationMsg="Clicked Successfully"
+        Case "CLICKBUTTON"
+            TestObj.ClickButton xCordinate,yCordinate
+            sValidationMsg="Clicked Successfully"
+        Case Else
+          Log.Warning("FnPerformActionWithCoordinates invalid case value :" +sAction)
+          Exit Function
+      End Select
+      If Err.Description <> "" then
+        Log.Warning gStepDesc & " - " & " FnPerformActionWithCoordinates function failed due to error : " & Err.Description
+        FnPerformAction=False
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+        Exit Function
+      End If
+      Call FnWriteReportStep(gStepDesc,"PASSED", "","")
+  End IF
+  FnPerformActionWithCoordinates=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnTestObjExist
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnTestObjExist(byref gStepDesc,sKeyValue,bObjStatus)
+  On Error Resume Next
+  Err.Clear
+  FnTestObjExist=False
+  bObjExists=""
+  If Not FnGetObject(gStepDesc, sKeyValue,TestObj) then
+    bObjExists=False
+    FnTestObjExist=bObjExists
+    Exit Function
+  Else
+    If Not(TestObj.Exists) then
+      bObjExists=False
+    Else
+      bObjExists=True
+    End If
+    If cbool(bObjExists)=cbool(bObjStatus) then
+      sObjName=aqObject.GetPropertyValue(TestObj,"ObjectIdentifier")
+      Err.Clear
+      FnTestObjExist=bObjExists
+    Else
+      FnTestObjExist=bObjExists
+    End If
+  End if
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnTestObjWait
+'Author : G10X
+'OPT|5|True
+'OPT|5
+'5|True
+'*****************************************************************************************************************************
+Function FnTestObjWait(byref gStepDesc, sKeyValue,iTimeout)
+  On Error Resume Next
+  Err.Clear
+  FnTestObjWait=False
+  
+  If Project.Variables.gStopTest=false then
+      sFound=""
+      sMessage=""
+      sOption=""
+      sObjStatus=True
+      bStatus=False
+      SplitTimeout=Split(iTimeout,"|")
+      If Ubound(SplitTimeOut)=1 then
+        If Ucase(Trim(SplitTimeout(0)))="OPT" then
+          sOption="OPT"
+          iTimeout=cint(SplitTimeout(1))
+          sObjStatus=TRUE
+        ElseIf Ucase(Trim(SplitTimeout(1)))="TRUE" or Ucase(Trim(SplitTimeout(1)))="FALSE" then
+          iTimeout=cint(SplitTimeout(0))
+          sObjStauts=cbool(Trim(SplitTimeout(1)))
+        End If
+      ElseIf Ubound(SplitTimeOut)=2 then
+        iTimeOut=Cint(SplitTimeout(1))
+        If Ucase(Trim(SplitTimeout(0)))="OPT" then
+          sOption="OPT"
+        End if
+        If Ucase(Trim(SplitTimeout(2)))="TRUE" or Ucase(Trim(SplitTimeout(2)))="FALSE" then
+            sObjStatus=cbool(Trim(SplitTimeout(2)))
+        Else
+            sObjStatus=TRUE
+        End If
+      Else
+        iTimeout=cint(SplitTimeout(0))
+        sObjStatus=TRUE
+      End If
+      For iLoop=1 to Cint(iTimeout) step 1
+        bStatus=FnTestObjExist(gStepDesc,sKeyValue,bObjStatus)
+        If Err.Description<> "" then
+          Project.Variables.gTestCaseStatus="FAILED"
+          Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+          Exit Function
+        End If
+        If bStatus=cbool(sObjStatus) then
+          Exit For
+        End If
+      Next
+      If bStatus=True then
+        sFound=" exists."
+        sMessage=" does not exists."
+      Else
+        sFound=" does not exists."
+        sMessage=" exists."
+      End If
+      If Ucase(Trim(sObjStatus))="OPT" then
+        FnTestObjWait=True
+        If cbool(bStatus)=True then
+          Log.Message gStepDesc & " - " & " object found."
+        End If
+      Else
+        If cbool(bStatus)=cbool(sObjStatus) then
+          FnTestObjWait=True
+        Else
+          Project.Variables.gTestCaseStatus="FAILED"
+          Call FnWriteReportStep(gStepDesc,"FAILED", "Test Object" & sMessage,"")
+          Exit Function
+        End If
+      End If
+      If Err.Description <> "" then
+        Log.Message gStepDesc & " - " & " FnTestObjWait function failed due to error : " & Err.Description
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+        Exit Function
+      End If
+      Call FnWriteReportStep(gStepDesc,"PASSED", "","")
+  End IF
+  FnTestObjWait=True
+End Function
+'*****************************************************************************************************************************
+'Function Name : FnInvokeTestedApp
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnInvokeTestedApp(byref gStepDesc, sTestedApp)
+  On Error Resume Next
+  Err.Clear
+  FnInvokeTestedApp=False  
+  Call eval("TestedApps."& sTestedApp &".Run(1,True)")
+  If Err.Description<> "" then
+    Log.Message gStepDesc & " - " &  "FnInvokeTestedApp function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+    Exit Function
+  End If
+  Call FnWriteReportStep(gStepDesc,"PASSED", "",sTestedApp & " Launched successfully.")
+  FnInvokeTestedApp=True
+End Function
+
+
+'*****************************************************************************************************************************
+'Function Name : FnCloseTestedApp
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnCloseTestedApp(byref gStepDesc, sTestedApp)
+  On Error Resume Next
+  Err.Clear
+  FnCloseTestedApp=False  
+  Call eval("TestedApps."& sTestedApp &".Close")
+  If Err.Description<> "" then
+    Log.Message gStepDesc & " - " &  "FnInvokeTestedApp function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Call FnWriteReportStep(gStepDesc,"FAILED", Err.Description,"")
+    Exit Function
+  End If
+  Call FnWriteReportStep(gStepDesc,"PASSED", "",sTestedApp & " closed successfully.")
+  FnCloseTestedApp=True
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnGetObjectProperty
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetObjectProperty(byref gStepDesc, sKeyValue, sPropertyName)
+  On Error Resume Next
+  Err.Clear
+  FnGetObjectProperty=False
+  If Project.Variables.gStopTest=false then
+      If Not FnGetObject(gStepDesc,sKeyValue,TestObj) then
+        If sOption="OPT" then
+          FnGetObjectProperty=True
+          Exit Function
+        Else
+          Project.Variables.gTestCaseStatus="FAILED"
+          Call FnWriteReportStep(gStepDesc,"FAILED", "Test object not found.","")
+          Exit Function
+        End If
+      End If
+      sPropVal=Trim(aqobject.GetPropertyValue(TestObj,sPropertyName))
+      Log.Message(sPropVal)
+      Project.Variables.gGetObjPropValue= sPropVal
+      If Err.Description <> "" then
+        Log.Message gStepDesc & " - " & " FnGetObjectProperty function failed due to error : " & Err.Description
+        FnGetObjectProperty=False
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED","Err.Description","")
+        Exit function
+      End If
+      Call FnWriteReportStep(gStepDesc,"PASSED", "",sPropertyName & ": " & Project.Variables.gGetObjPropValue)
+  End If
+  FnGetObjectProperty=True
+  
+End Function
+
+'*****************************************************************************************************************************
+'Function Name : FnVerifyObjectProperty
+'Author : G10X
+'sPropertyDetails = "Text|Testing|Equal"
+'*****************************************************************************************************************************
+Function FnVerifyObjectProperty(byref gStepDesc, sKeyValue, sPropertyDetails)
+  On Error Resume Next
+  Err.Clear
+  dim svalMsg
+  FnVerifyObjectProperty=False
+  If Project.Variables.gStopTest=false then
+      aPropertyDetails=Split(sPropertyDetails,"|")
+
+      sPropName=aPropertyDetails(0)
+      sExpPropVal=Trim(Ucase(aPropertyDetails(1)))
+      If Ubound(aPropertyDetails)= 2 then
+        sPropCheck=aPropertyDetails(2)
+      Else
+        sPropCheck=""
+      End If
+  
+      If Not FnGetObject(gStepDesc,sKeyValue,TestObj) then
+          Project.Variables.gTestCaseStatus="FAILED"
+          Call FnWriteReportStep(gStepDesc,"FAILED","Test Object not found.","")
+          Exit Function
+      End If
+      sActPropVal=Ucase(Trim(aqobject.GetPropertyValue(TestObj,sPropName)))
+      If isNumeric(sExpPropVal) then
+       sActPropVal= cInt(sActPropVal)
+       sExpPropVal= cInt(sExpPropVal)
+      ElseIf Trim(Ucase(sExpPropVal))="TRUE" or Trim(Ucase(sExpPropVal))="FALSE" then
+        sActPropVal= cBool(sActPropVal)
+        sExpPropVal= cBool(sExpPropVal)
+      End If
+      sVerifyStatus=False
+      If Trim(sPropCheck)<> "" then
+        Select Case Ucase(Trim(sPropCheck))
+          Case "GREATER"
+               If sActPropVal > sExpPropVal then
+                  sVerifyStatus=True
+                  svalMsg = CStr(sActPropVal) + " is greater than " + CStr(sExpPropVal)
+               Else
+                  svalMsg = CStr(sActPropVal) + " is not greater than " + CStr(sExpPropVal)
+               End If
+          Case "EQUAL"
+               If sActPropVal =sExpPropVal then
+                  sVerifyStatus=True
+                  svalMsg = CStr(sActPropVal) + " is equal to " + CStr(sExpPropVal)
+               Else
+                  svalMsg = CStr(sActPropVal) + " is not equal to " + CStr(sExpPropVal)
+               End If
+          Case "LESSER"
+               If sActPropVal < sExpPropVal then
+                  sVerifyStatus=True
+                  svalMsg = CStr(sActPropVal) + " is lesser than " + CStr(sExpPropVal)
+               Else
+                  svalMsg = CStr(sActPropVal) + " is not lesser than " + CStr(sExpPropVal)
+               End If
+           Case "GREATEROREQUAL"
+               If sActPropVal >= sExpPropVal then
+                  sVerifyStatus=True
+                  svalMsg = CStr(sActPropVal) + " is greater than or equal to " + CStr(sExpPropVal)
+               Else
+                  svalMsg = CStr(sActPropVal) + " is greater than or equal to " + CStr(sExpPropVal)
+               End If
+           Case "LESSEROREQUAL"
+               If sActPropVal <= sExpPropVal then
+                  sVerifyStatus=True
+               svalMsg = CStr(sActPropVal) + "" + CStr(sExpPropVal)
+               Else
+                  svalMsg = CStr(sActPropVal) + "" + CStr(sExpPropVal)
+               End If 
+           Case Else
+               Log.Message "FnVerifyObjectProperty - Case statement not specified correctly."
+               Project.Variables.gTestCaseStatus="FAILED"
+                Call FnWriteReportStep(gStepDesc,"FAILED","FnVerifyObjectProperty - Specify the Case Statement.","")
+               Exit Function
+        End Select
+      Else
+        If sActPropVal =sExpPropVal then
+           sVerifyStatus=True
+          svalMsg = CStr(sActPropVal) + " is equal to " + CStr(sExpPropVal)
+        Else
+          svalMsg = CStr(sActPropVal) + " is not equal to " + CStr(sExpPropVal)
+        End If
+      End If
+      If sVerifyStatus=True then
+        Log.Message svalMsg
+      Else
+        Log.Warning svalMsg 
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED","Actual : " & sActPropVal & " - Expected  : " & sExpPropVal,"")
+        Exit function
+      End If
+  
+      If Err.Description <> "" then
+        Log.Message gStepDesc & " - " & " FnVerifyObjectProperty function failed due to error : " & Err.Description
+        Project.Variables.gTestCaseStatus="FAILED"
+        Call FnWriteReportStep(gStepDesc,"FAILED",Err.Description,"")
+        Exit Function
+      End IF
+       Call FnWriteReportStep(gStepDesc,"PASSED","","Actual : " & sActPropVal & " - Expected  : " & sExpPropVal)
+  End If
+  FnVerifyObjectProperty=True
+  
+End Function
+
+'*****************************************************************************************************************************
+'Function Name :FnGetTestData
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnGetTestData(sKey)
+  On Error resume next
+  Err.clear
+  sValue=Trim(Project.Variables.gTestDataDict(Ucase(sKey)))
+  FnGetTestData=sValue
+  Call FnWriteReportStep("Test Data Retrieval :" & sKey ,"PASSED","","Value Retrieved : " + sValue)
+  If Err.Description <> "" then
+    Log.Message gStepDesc & " - " & " FnGetTestData function failed due to error : " & Err.Description
+    Project.Variables.gTestCaseStatus="FAILED"
+    Call FnWriteReportStep("Test Data Retrieval :" & sKey,"FAILED",Err.Description,"")
+    Exit Function
+  End IF      
+End Function
+
+'*****************************************************************************************************************************
+'Function Name :FnGetTestData
+'Author : G10X
+'*****************************************************************************************************************************
+Function FnSndKeys(keyval,times)
+  For i = 1 to times
+    WshShell.SendKeys keyval
+    Call ExplicitDelay(2000)
+  Next
+  
+End Function
+
