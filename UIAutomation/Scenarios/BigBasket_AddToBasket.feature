@@ -11,7 +11,7 @@
   Scenario: Add product to basket
     When user clicks on Add button
     Then product is added to basket
-    Then produc is aed to basket
+  
     
 
     
